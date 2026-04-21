@@ -51,6 +51,11 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html,body { overscroll-behavior: none; }
+  html {
+    background: linear-gradient(160deg, #0a0a1a 0%, #141428 50%, #0d1b2a 100%);
+    background-attachment: fixed;
+    min-height: 100%;
+  }
   body {
     background: linear-gradient(160deg, #0a0a1a 0%, #141428 50%, #0d1b2a 100%);
     background-attachment: fixed;
@@ -2902,7 +2907,21 @@ function _isFormField(el) {
 function _revealFocused() {
   const el = document.activeElement;
   if (!_isFormField(el)) return;
-  try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch { try { el.scrollIntoView(); } catch {} }
+  const vv = window.visualViewport;
+  const visibleH = vv ? vv.height : window.innerHeight;
+  const rect = el.getBoundingClientRect();
+  const body = document.body;
+  const app = document.getElementById("app");
+  const scroller = (body.classList.contains("kb-lock") && app) ? app : (document.scrollingElement || document.documentElement);
+  const topMargin = 80;
+  const bottomMargin = 24;
+  if (rect.bottom > visibleH - bottomMargin) {
+    const delta = rect.bottom - (visibleH - bottomMargin);
+    scroller.scrollTop = (scroller.scrollTop || 0) + delta;
+  } else if (rect.top < topMargin) {
+    const delta = topMargin - rect.top;
+    scroller.scrollTop = Math.max(0, (scroller.scrollTop || 0) - delta);
+  }
 }
 function _updateKbLock() {
   const vv = window.visualViewport;
@@ -2927,14 +2946,13 @@ function _updateKbLock() {
   }
 }
 document.addEventListener("focusin", (e) => {
-  setTimeout(() => {
-    _updateKbLock();
-    if (_isFormField(e.target)) setTimeout(_revealFocused, 200);
-  }, 50);
+  if (!_isFormField(e.target)) return;
+  [50, 200, 400, 700].forEach(ms => setTimeout(() => { _updateKbLock(); _revealFocused(); }, ms));
 });
 document.addEventListener("focusout", () => setTimeout(_updateKbLock, 100));
 if (window.visualViewport) {
-  window.visualViewport.addEventListener("resize", _updateKbLock);
+  window.visualViewport.addEventListener("resize", () => { _updateKbLock(); _revealFocused(); });
+  window.visualViewport.addEventListener("scroll", _revealFocused);
 }
 
 // ═══════════════════════════════════════════════════════════════
