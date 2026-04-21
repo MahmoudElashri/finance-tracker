@@ -50,17 +50,22 @@
     --input-bg: #1e1e3a;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html,body { overscroll-behavior: none; }
+  html { height: 100%; }
+  html, body { overscroll-behavior: none; }
   body {
     background: linear-gradient(160deg, #0a0a1a 0%, #141428 50%, #0d1b2a 100%);
     background-attachment: fixed;
     color: var(--text);
     font-family: 'DM Sans', system-ui, sans-serif;
-    min-height: 100dvh;
     line-height: 1.4;
     -webkit-font-smoothing: antialiased;
-    padding-bottom: env(safe-area-inset-bottom);
-    overscroll-behavior-y: contain;
+    /* Lock the body to the visible viewport so iOS cannot scroll into whitespace
+       below the content when the software keyboard opens. --visible-h is
+       updated from visualViewport.height in JS. */
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--visible-h, 100dvh);
+    overflow: hidden;
   }
   .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500; letter-spacing: -0.3px; }
   ::-webkit-scrollbar { width: 0; display: none; }
@@ -68,8 +73,13 @@
   /* ── LAYOUT ──────────────────────── */
   .app {
     max-width: 500px; margin: 0 auto;
-    padding: calc(20px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 100px calc(14px + env(safe-area-inset-left));
-    min-height: 100dvh;
+    padding: calc(20px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(100px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+    /* .app is the real scroll container so body itself can't scroll past
+       content when the iOS keyboard resizes the visual viewport. */
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
   .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
   .page-header h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1.15; }
@@ -495,7 +505,7 @@
     .nav-btn .icon { font-size: 22px; }
     .nav-btn { padding: 10px 0 8px; }
     .page-header h1 { font-size: 20px; }
-    .app { padding: calc(16px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) 96px calc(10px + env(safe-area-inset-left)); }
+    .app { padding: calc(16px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left)); }
     .kpi-grid { gap: 6px; }
     .kpi { padding: 12px 10px; }
     .kpi-value { font-size: 18px; }
@@ -1471,9 +1481,10 @@ function changeDebtPayPaidWith(m, debtId, pw) {
 }
 
 function refreshTotals() {
-  const scrollY = window.scrollY;
+  const app = document.getElementById("app");
+  const scrollTop = app ? app.scrollTop : 0;
   render();
-  window.scrollTo(0, scrollY);
+  if (app) app.scrollTop = scrollTop;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1666,7 +1677,8 @@ function setView(v) {
   if (v !== "daily") activeDay = null;
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === v));
   render();
-  window.scrollTo(0, 0);
+  const app = document.getElementById("app");
+  if (app) app.scrollTop = 0;
 }
 function switchMonth(m) { currentMonth = m; activeDay = null; render(); }
 function toggleDay(d) {
@@ -2856,6 +2868,21 @@ function render() {
   el.innerHTML = (views[currentView] || renderDash)();
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === currentView));
 }
+
+// ═══════════════════════════════════════════════════════════════
+// VIEWPORT HEIGHT — fixes iOS Safari keyboard whitespace bug
+// ═══════════════════════════════════════════════════════════════
+function updateVisibleHeight() {
+  const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+  document.documentElement.style.setProperty("--visible-h", h + "px");
+}
+updateVisibleHeight();
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", updateVisibleHeight);
+  window.visualViewport.addEventListener("scroll", updateVisibleHeight);
+}
+window.addEventListener("resize", updateVisibleHeight);
+window.addEventListener("orientationchange", () => setTimeout(updateVisibleHeight, 150));
 
 // ═══════════════════════════════════════════════════════════════
 // SERVICE WORKER
