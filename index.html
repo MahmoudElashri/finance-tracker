@@ -50,22 +50,34 @@
     --input-bg: #1e1e3a;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html { height: 100%; }
-  html, body { overscroll-behavior: none; }
+  html,body { overscroll-behavior: none; }
   body {
     background: linear-gradient(160deg, #0a0a1a 0%, #141428 50%, #0d1b2a 100%);
     background-attachment: fixed;
     color: var(--text);
     font-family: 'DM Sans', system-ui, sans-serif;
+    min-height: 100dvh;
     line-height: 1.4;
     -webkit-font-smoothing: antialiased;
-    /* Lock the body to the visible viewport so iOS cannot scroll into whitespace
-       below the content when the software keyboard opens. --visible-h is
-       updated from visualViewport.height in JS. */
+    padding-bottom: env(safe-area-inset-bottom);
+    overscroll-behavior-y: contain;
+  }
+  /* When a form input is focused and the iOS keyboard is open, lock body to
+     the visible viewport height and let .app scroll internally. This prevents
+     iOS from letting the page scroll into empty whitespace beyond content. */
+  body.kb-lock {
     position: fixed;
     top: 0; left: 0; right: 0;
     height: var(--visible-h, 100dvh);
+    min-height: 0;
     overflow: hidden;
+    padding-bottom: 0;
+  }
+  body.kb-lock .app {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
   .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500; letter-spacing: -0.3px; }
   ::-webkit-scrollbar { width: 0; display: none; }
@@ -73,13 +85,8 @@
   /* ── LAYOUT ──────────────────────── */
   .app {
     max-width: 500px; margin: 0 auto;
-    padding: calc(20px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(100px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
-    /* .app is the real scroll container so body itself can't scroll past
-       content when the iOS keyboard resizes the visual viewport. */
-    height: 100%;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    padding: calc(20px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 100px calc(14px + env(safe-area-inset-left));
+    min-height: 100dvh;
   }
   .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
   .page-header h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1.15; }
@@ -1483,9 +1490,11 @@ function changeDebtPayPaidWith(m, debtId, pw) {
 
 function refreshTotals() {
   const app = document.getElementById("app");
-  const scrollTop = app ? app.scrollTop : 0;
+  const inLock = document.body.classList.contains("kb-lock");
+  const scrollTop = inLock && app ? app.scrollTop : window.scrollY;
   render();
-  if (app) app.scrollTop = scrollTop;
+  if (inLock && app) app.scrollTop = scrollTop;
+  else window.scrollTo(0, scrollTop);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1678,8 +1687,12 @@ function setView(v) {
   if (v !== "daily") activeDay = null;
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === v));
   render();
-  const app = document.getElementById("app");
-  if (app) app.scrollTop = 0;
+  if (document.body.classList.contains("kb-lock")) {
+    const app = document.getElementById("app");
+    if (app) app.scrollTop = 0;
+  } else {
+    window.scrollTo(0, 0);
+  }
 }
 function switchMonth(m) { currentMonth = m; activeDay = null; render(); }
 function toggleDay(d) {
@@ -2871,19 +2884,46 @@ function render() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// VIEWPORT HEIGHT — fixes iOS Safari keyboard whitespace bug
+// KEYBOARD LOCK — only locks layout while iOS keyboard is up,
+// then fully releases (so no white space anywhere the rest of the time).
+// Uses visualViewport.height to detect the keyboard and freezes body
+// to that height; .app becomes the scroll container only during the lock.
+// Scroll position is saved on lock and restored on release.
 // ═══════════════════════════════════════════════════════════════
-function updateVisibleHeight() {
-  const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-  document.documentElement.style.setProperty("--visible-h", h + "px");
+let _kbSavedScroll = 0;
+function _isFormField(el) {
+  if (!el) return false;
+  const tag = el.tagName;
+  if (tag === "TEXTAREA" || tag === "SELECT") return true;
+  if (tag !== "INPUT") return false;
+  const t = (el.type || "text").toLowerCase();
+  return !["checkbox", "radio", "button", "submit", "reset", "file", "range", "color"].includes(t);
 }
-updateVisibleHeight();
+function _updateKbLock() {
+  const vv = window.visualViewport;
+  const h = vv ? vv.height : window.innerHeight;
+  const kbOpen = _isFormField(document.activeElement) && vv && (window.innerHeight - h) > 80;
+  const body = document.body;
+  const app = document.getElementById("app");
+  if (kbOpen && !body.classList.contains("kb-lock")) {
+    _kbSavedScroll = window.scrollY || window.pageYOffset || 0;
+    document.documentElement.style.setProperty("--visible-h", h + "px");
+    body.classList.add("kb-lock");
+    if (app) app.scrollTop = _kbSavedScroll;
+  } else if (kbOpen && body.classList.contains("kb-lock")) {
+    document.documentElement.style.setProperty("--visible-h", h + "px");
+  } else if (!kbOpen && body.classList.contains("kb-lock")) {
+    const restore = app ? app.scrollTop : _kbSavedScroll;
+    body.classList.remove("kb-lock");
+    document.documentElement.style.removeProperty("--visible-h");
+    requestAnimationFrame(() => window.scrollTo(0, restore));
+  }
+}
+document.addEventListener("focusin", () => setTimeout(_updateKbLock, 50));
+document.addEventListener("focusout", () => setTimeout(_updateKbLock, 100));
 if (window.visualViewport) {
-  window.visualViewport.addEventListener("resize", updateVisibleHeight);
-  window.visualViewport.addEventListener("scroll", updateVisibleHeight);
+  window.visualViewport.addEventListener("resize", _updateKbLock);
 }
-window.addEventListener("resize", updateVisibleHeight);
-window.addEventListener("orientationchange", () => setTimeout(updateVisibleHeight, 150));
 
 // ═══════════════════════════════════════════════════════════════
 // SERVICE WORKER
