@@ -56,10 +56,11 @@
     background-attachment: fixed;
     color: var(--text);
     font-family: 'DM Sans', system-ui, sans-serif;
-    min-height: 100vh;
+    min-height: 100dvh;
     line-height: 1.4;
     -webkit-font-smoothing: antialiased;
     padding-bottom: env(safe-area-inset-bottom);
+    overscroll-behavior-y: contain;
   }
   .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500; letter-spacing: -0.3px; }
   ::-webkit-scrollbar { width: 0; display: none; }
@@ -68,7 +69,7 @@
   .app {
     max-width: 500px; margin: 0 auto;
     padding: calc(20px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 100px calc(14px + env(safe-area-inset-left));
-    min-height: 100vh;
+    min-height: 100dvh;
   }
   .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
   .page-header h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1.15; }
@@ -405,7 +406,7 @@
     padding: 20px;
     max-width: 440px;
     width: 100%;
-    max-height: 85vh;
+    max-height: 85dvh;
     overflow-y: auto;
     transform: scale(0.95);
     transition: transform 0.2s;
@@ -517,6 +518,8 @@
   .balance-chip.debt { border-color: rgba(231,76,60,0.25); background: var(--red-soft); }
   .balance-chip.debt .b-val { color: var(--red); }
   .balance-chip.account .b-val { color: var(--teal); }
+  .balance-chip.account.negative .b-val { color: var(--red); }
+  .balance-chip.account.negative { border-color: rgba(231,76,60,0.25); background: var(--red-soft); }
 </style>
 </head>
 <body>
@@ -594,6 +597,18 @@ const STORAGE_KEY = "ftv4";
 const LEGACY_KEY = "ftv3";
 
 const uid = (pfx) => pfx + "_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+
+// Account types — icon + label pair. Users can pick any of these per account.
+const ACCOUNT_TYPES = [
+  { id: "cash",       icon: "💵", label: "Cash / Wallet" },
+  { id: "bank",       icon: "🏦", label: "Checking / Bank" },
+  { id: "savings",    icon: "🏛️", label: "Savings" },
+  { id: "investment", icon: "📈", label: "Investment" },
+  { id: "card",       icon: "💳", label: "Debit / Prepaid" },
+  { id: "crypto",     icon: "₿",  label: "Crypto" },
+  { id: "other",      icon: "💰", label: "Other" }
+];
+const accountIcon = (acc) => (ACCOUNT_TYPES.find(t => t.id === acc?.type) || ACCOUNT_TYPES[6]).icon;
 const toISO = (y, m, d) => `${y}-${String(m+1).padStart(2,"0")}-${String(d+1).padStart(2,"0")}`;
 const parseISO = (s) => { const [y,m,d] = s.split("-").map(Number); return { y, m: m-1, d: d-1 }; };
 
@@ -1291,20 +1306,22 @@ function getMonthData(m) {
 }
 
 function getAnnual() {
-  let totInc=0, totExp=0, totDebtPaid=0, totSaved=0, totFixed=0, totVar=0;
+  let totInc=0, totExp=0, totDebtPaid=0, totMonthlySaved=0, totFixed=0, totVar=0;
   const catTotals = {};
   for (let m = 0; m < 12; m++) {
     const md = getMonthData(m);
     totInc += md.income; totExp += md.expenses; totDebtPaid += md.debtPaid;
     totFixed += md.fixed; totVar += md.variable;
-    totSaved += (mo(m).savings?.actual || 0);
+    totMonthlySaved += (mo(m).savings?.actual || 0);
     Object.keys(md.catTotals).forEach(c => { catTotals[c] = (catTotals[c] || 0) + md.catTotals[c]; });
   }
+  const totGoalSaved = (DATA.goals || []).reduce((s, g) => s + (Number(g.saved) || 0), 0);
+  const totSaved = totMonthlySaved + totGoalSaved;
   const totalDebt = DATA.debts.reduce((s,d) => s + (Number(d.balance)||0), 0);
   const debtRemaining = totalDebt;
   const totalAssets = DATA.accounts.reduce((s,a) => s + (Number(a.balance)||0), 0);
   const netWorth = totalAssets - debtRemaining;
-  return { totInc, totExp, balance: totInc - totExp, totDebtPaid, totSaved, totalDebt, debtRemaining, totFixed, totVar, catTotals, netWorth, totalAssets };
+  return { totInc, totExp, balance: totInc - totExp, totDebtPaid, totSaved, totMonthlySaved, totGoalSaved, totalDebt, debtRemaining, totFixed, totVar, catTotals, netWorth, totalAssets };
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1320,7 +1337,7 @@ function paidWithSelectHTML(selected, callbackName, { accountsOnly = false, allo
   if (accounts.length) {
     opts.push(`<optgroup label="Accounts">`);
     accounts.forEach(a => {
-      opts.push(`<option value="account:${a.id}" ${isSel("account", a.id) ? "selected" : ""}>🏦 ${escapeHTML(a.name)}</option>`);
+      opts.push(`<option value="account:${a.id}" ${isSel("account", a.id) ? "selected" : ""}>${accountIcon(a)} ${escapeHTML(a.name)}</option>`);
     });
     opts.push(`</optgroup>`);
   }
@@ -1341,10 +1358,9 @@ function paidWithChipsHTML(selected, { accountsOnly = false } = {}) {
   const isSel = (kind, id) => selected && selected.kind === kind && selected.id === id;
   const chips = [];
   accounts.forEach(a => {
-    const icon = { cash: "💵", bank: "🏦", investment: "📈" }[a.type] || "🏦";
     chips.push(`<button type="button" class="pw-chip ${isSel("account", a.id) ? "active" : ""}"
       data-pw="account:${a.id}"
-      onclick="selectQuickPaidWith('account','${a.id}')">${icon} ${escapeHTML(a.name)}</button>`);
+      onclick="selectQuickPaidWith('account','${a.id}')">${accountIcon(a)} ${escapeHTML(a.name)}</button>`);
   });
   if (!accountsOnly) debts.forEach(d => {
     chips.push(`<button type="button" class="pw-chip debt ${isSel("debt", d.id) ? "active" : ""}"
@@ -1557,11 +1573,70 @@ async function deleteGoal(id) {
   DATA.goals = DATA.goals.filter(g => g.id !== id);
   save(); render(); toast("Deleted");
 }
-async function addAccount() {
-  const name = await appPrompt("Account name:");
-  if (!name || !name.trim()) return;
-  DATA.accounts.push({ id: uid("a"), name: name.trim(), type: "bank", balance: 0, autoSync: true });
-  save(); render(); toast("Account added");
+function addAccount() {
+  window.__newAcct = { name: "", type: "bank", balance: 0, autoSync: true };
+  const typeGrid = ACCOUNT_TYPES.map(t =>
+    `<button type="button" data-type="${t.id}"
+      class="btn ${t.id === "bank" ? "btn-primary" : "btn-ghost"}"
+      style="justify-content:center;padding:14px 8px;flex-direction:column;gap:6px;font-size:11px"
+      onclick="selectNewAcctType('${t.id}')">
+        <span style="font-size:22px">${t.icon}</span>
+        <span>${t.label}</span>
+    </button>`).join("");
+
+  document.getElementById("modal-content").innerHTML = `
+    <div class="modal-title">
+      <span>💎 New Account</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <label class="debt-field-label" style="display:block;margin-bottom:6px">Name</label>
+    <input type="text" class="text-input" id="new-acct-name" placeholder="e.g. RBC Checking" autofocus
+      oninput="window.__newAcct.name=this.value"/>
+
+    <label class="debt-field-label" style="display:block;margin:14px 0 6px">Type & icon</label>
+    <div id="new-acct-types" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${typeGrid}</div>
+
+    <label class="debt-field-label" style="display:block;margin:14px 0 6px">Starting balance (optional)</label>
+    <input type="number" inputmode="decimal" step="0.01" class="amt-input" style="width:100%;text-align:left"
+      placeholder="0.00" oninput="window.__newAcct.balance=parseFloat(this.value)||0"/>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="commitNewAccount()">Add</button>
+    </div>
+  `;
+  document.getElementById("modal-overlay").classList.add("show");
+  setTimeout(() => document.getElementById("new-acct-name")?.focus(), 100);
+}
+
+function selectNewAcctType(typeId) {
+  window.__newAcct.type = typeId;
+  document.querySelectorAll("#new-acct-types [data-type]").forEach(btn => {
+    const on = btn.getAttribute("data-type") === typeId;
+    btn.className = "btn " + (on ? "btn-primary" : "btn-ghost");
+    btn.style.cssText = "justify-content:center;padding:14px 8px;flex-direction:column;gap:6px;font-size:11px";
+  });
+}
+
+function commitNewAccount() {
+  const n = (window.__newAcct.name || "").trim();
+  if (!n) { toast("Give it a name", true); return; }
+  DATA.accounts.push({
+    id: uid("a"), name: n,
+    type: window.__newAcct.type || "bank",
+    balance: window.__newAcct.balance || 0,
+    autoSync: true
+  });
+  delete window.__newAcct;
+  save(); closeModal(); render(); toast(`"${n}" added`);
+}
+
+function setAccountType(id, typeId) {
+  const a = DATA.accounts.find(x => x.id === id);
+  if (!a) return;
+  a.type = typeId;
+  save(); render();
 }
 async function deleteAccount(id) {
   if (!(await appConfirm("Delete this account? Transactions paid from it will lose their source tag."))) return;
@@ -1636,9 +1711,10 @@ function renderYearSelector() {
 function renderBalanceStrip() {
   const chips = [];
   DATA.accounts.forEach(a => {
-    chips.push(`<div class="balance-chip account">
-      <span class="b-label">${escapeHTML(a.name)}</span>
-      <span class="b-val">${fmt(a.balance)}</span>
+    const neg = (Number(a.balance) || 0) < 0 ? " negative" : "";
+    chips.push(`<div class="balance-chip account${neg}">
+      <span class="b-label">${accountIcon(a)} ${escapeHTML(a.name)}</span>
+      <span class="b-val">${fmt(a.balance, true)}</span>
     </div>`);
   });
   DATA.debts.filter(d => d.isPaymentMethod).forEach(d => {
@@ -2261,19 +2337,30 @@ function renderWealth() {
   const totalAssets = a.totalAssets;
 
   const accountCards = DATA.accounts.map(acc => {
-    const icon = { cash: "💵", bank: "🏦", investment: "📈" }[acc.type] || "💰";
-    return `<div style="padding:11px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:6px">
-      <div class="flex justify-between items-center">
-        <div class="form-label">
-          <span>${icon}</span>
+    const typeOpts = ACCOUNT_TYPES.map(t =>
+      `<option value="${t.id}" ${t.id === (acc.type || "other") ? "selected" : ""}>${t.icon} ${t.label}</option>`
+    ).join("");
+    const neg = (Number(acc.balance) || 0) < 0;
+    return `<div style="padding:11px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px">
+      <div class="flex justify-between items-center gap-2">
+        <div class="form-label" style="gap:6px">
+          <span style="font-size:18px">${accountIcon(acc)}</span>
           <input type="text" class="editable-label" value="${escapeHTML(acc.name)}"
             onblur="onTextBlur(this,'accountName|${acc.id}')"
             onkeydown="if(event.key==='Enter'){this.blur();}"/>
         </div>
         <div class="flex items-center gap-2">
-          ${amtInput(acc.balance, `account|${acc.id}|balance`)}
+          <input type="number" inputmode="decimal" step="0.01" class="amt-input"
+            style="color:${neg ? 'var(--red)' : 'inherit'}"
+            value="${acc.balance || ""}" placeholder="0"
+            onblur="onAmtBlur(this,'account|${acc.id}|balance')" onfocus="this.select()"/>
           <button class="delete-btn" onclick="deleteAccount('${acc.id}')">🗑</button>
         </div>
+      </div>
+      <div class="flex items-center gap-2" style="gap:6px">
+        <span class="text-muted" style="font-size:10px">Type:</span>
+        <select class="select-input" style="flex:1;font-size:12px;padding:6px 26px 6px 10px"
+          onchange="setAccountType('${acc.id}',this.value)">${typeOpts}</select>
       </div>
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:var(--text-dim)">
         <input type="checkbox" ${acc.autoSync ? "checked" : ""} onchange="toggleAccountAutoSync('${acc.id}')" style="accent-color:var(--accent)"/>
@@ -2333,8 +2420,8 @@ function renderWealth() {
     <p class="note">Balances auto-adjust as you log transactions (when auto-sync is on).</p>
     ${accountCards}
     <div class="total-row">
-      <span class="total-label" style="color:var(--teal)">Total Assets</span>
-      <span class="total-val" style="color:var(--teal)">${fmt(totalAssets)}</span>
+      <span class="total-label" style="color:${totalAssets >= 0 ? 'var(--teal)' : 'var(--red)'}">Total Assets</span>
+      <span class="total-val" style="color:${totalAssets >= 0 ? 'var(--teal)' : 'var(--red)'}">${fmt(totalAssets, true)}</span>
     </div>
   </div>
 
