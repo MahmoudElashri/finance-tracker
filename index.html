@@ -477,13 +477,13 @@
     padding: 8px 0 4px; transition: all 0.15s;
     color: var(--muted);
   }
-  .nav-btn .icon { font-size: 18px; transition: transform 0.15s; }
+  .nav-btn .ic { transition: transform 0.15s; }
   .nav-btn .lbl {
     font-size: 9px; font-family: 'DM Sans', sans-serif;
     font-weight: 600; letter-spacing: 0.2px;
   }
   .nav-btn.active { color: var(--accent); }
-  .nav-btn.active .icon { transform: translateY(-1px); }
+  .nav-btn.active .ic { transform: translateY(-1px); }
 
   /* ── TOAST ──────────────────────── */
   .toast {
@@ -496,7 +496,9 @@
     transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     pointer-events: none;
+    display: inline-flex; align-items: center; gap: 6px;
   }
+  .toast .ic { width: 14px; height: 14px; flex-shrink: 0; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error { background: var(--red); }
 
@@ -537,7 +539,7 @@
   /* ── SMALL SCREEN TWEAKS ──────────────────────── */
   @media (max-width: 380px) {
     .nav-btn .lbl { display: none; }
-    .nav-btn .icon { font-size: 22px; }
+    .nav-btn .ic { width: 24px; height: 24px; }
     .nav-btn { padding: 10px 0 8px; }
     .page-header h1 { font-size: 20px; }
     .app { padding: calc(16px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left)); }
@@ -545,6 +547,36 @@
     .kpi { padding: 12px 10px; }
     .kpi-value { font-size: 18px; }
   }
+
+  /* ── ICONS ──────────────────────── */
+  .ic {
+    display: inline-block;
+    width: 16px; height: 16px;
+    vertical-align: -3px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ic .ic-fill { fill: currentColor; stroke: none; }
+  .card-title-left .ic { width: 17px; height: 17px; }
+  .modal-title .ic { width: 18px; height: 18px; }
+  .nav-btn .ic { width: 22px; height: 22px; vertical-align: 0; }
+  .form-label .ic { width: 16px; height: 16px; }
+  .insight-title .ic { width: 16px; height: 16px; margin-right: 4px; }
+  .btn .ic { width: 14px; height: 14px; }
+  .btn-add { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn-add .ic { width: 13px; height: 13px; }
+  .icon-btn .ic { width: 18px; height: 18px; vertical-align: 0; }
+  .pw-chip .ic { width: 13px; height: 13px; }
+  .tx-row .ic { width: 12px; height: 12px; }
+  .delete-btn .ic { width: 15px; height: 15px; }
+  .empty-icon .ic { width: 36px; height: 36px; opacity: 0.6; vertical-align: 0; }
+  .empty-icon { display: inline-flex; }
+  .badge .ic { width: 11px; height: 11px; vertical-align: -1px; margin-right: 3px; }
+  .ic-lg { width: 22px; height: 22px; }
 
   /* ── BALANCE STRIP ──────────────────────── */
   .balance-strip {
@@ -576,7 +608,7 @@
       <p class="subtitle" id="subtitle">Auto-saved in your browser</p>
     </div>
     <div class="header-actions">
-      <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
+      <button class="icon-btn" onclick="openSettings()" aria-label="Settings" title="Settings"><i data-icon="settings"></i></button>
     </div>
   </div>
   <div id="view-content"></div>
@@ -587,25 +619,28 @@
 <nav class="nav">
   <div class="nav-inner">
     <button class="nav-btn" data-view="dash" onclick="setView('dash')">
-      <span class="icon">📊</span><span class="lbl">Home</span>
+      <i data-icon="home"></i><span class="lbl">Home</span>
     </button>
     <button class="nav-btn" data-view="daily" onclick="setView('daily')">
-      <span class="icon">📅</span><span class="lbl">Daily</span>
+      <i data-icon="calendar"></i><span class="lbl">Daily</span>
+    </button>
+    <button class="nav-btn" data-view="fixed" onclick="setView('fixed')">
+      <i data-icon="lock"></i><span class="lbl">Fixed</span>
     </button>
     <button class="nav-btn" data-view="budget" onclick="setView('budget')">
-      <span class="icon">🎯</span><span class="lbl">Budget</span>
+      <i data-icon="target"></i><span class="lbl">Budget</span>
     </button>
     <button class="nav-btn" data-view="income" onclick="setView('income')">
-      <span class="icon">💵</span><span class="lbl">Income</span>
+      <i data-icon="wallet"></i><span class="lbl">Income</span>
     </button>
     <button class="nav-btn" data-view="debt" onclick="setView('debt')">
-      <span class="icon">💳</span><span class="lbl">Debt</span>
+      <i data-icon="credit-card"></i><span class="lbl">Debt</span>
     </button>
     <button class="nav-btn" data-view="wealth" onclick="setView('wealth')">
-      <span class="icon">💎</span><span class="lbl">Wealth</span>
+      <i data-icon="gem"></i><span class="lbl">Wealth</span>
     </button>
     <button class="nav-btn" data-view="insights" onclick="setView('insights')">
-      <span class="icon">🧠</span><span class="lbl">Insights</span>
+      <i data-icon="sparkles"></i><span class="lbl">Insights</span>
     </button>
   </div>
 </nav>
@@ -622,6 +657,85 @@
 // ═══════════════════════════════════════════════════════════════
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const MONTHS_S = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+// ═══════════════════════════════════════════════════════════════
+// ICON SYSTEM — inline SVG, Lucide-inspired line icons. All icons
+// inherit color via currentColor and scale via width/height in CSS.
+// Usage: icon("home") → "<svg class='ic' ...>…</svg>"
+// ═══════════════════════════════════════════════════════════════
+const ICON_PATHS = {
+  // Navigation
+  "home":          '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+  "calendar":      '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  "lock":          '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  "target":        '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  "wallet":        '<path d="M21 12V8a2 2 0 0 0-2-2H5a2 2 0 0 1 0-4h14"/><path d="M3 6v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>',
+  "credit-card":   '<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/>',
+  "gem":           '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
+  "sparkles":      '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/><path d="M5 3v4M3 5h4M19 17v4M17 19h4"/>',
+
+  // Utility / actions
+  "settings":      '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  "trash":         '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+  "plus":          '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  "close":         '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  "check":         '<polyline points="20 6 9 17 4 12"/>',
+  "check-circle":  '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  "alert-triangle":'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  "alert-circle":  '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+  "info":          '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+  "edit":          '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/>',
+  "refresh":       '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+  "flame":         '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/>',
+  "arrow-up":      '<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>',
+  "arrow-down":    '<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>',
+  "upload":        '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  "download":      '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  "upload-cloud":  '<polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>',
+  "download-cloud":'<polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>',
+  "cloud":         '<path d="M17.5 19H9a7 7 0 1 1 6.71-9H17.5a4.5 4.5 0 0 1 0 9Z"/>',
+  "archive":       '<polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>',
+  "lightbulb":     '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>',
+  "dollar-sign":   '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/>',
+
+  // Domain
+  "piggy-bank":    '<path d="M19 5c-1.5 0-2.8.8-3.55 2-1.1-.6-2.85-1-4.45-1-3.5 0-6 2-6 5 0 2 1 3.5 2.5 4.5V19h3v-2h4v2h3v-3c.5-.4 1-1 1.3-1.7H20v-3h-1.3c-.3-.7-.8-1.2-1.3-1.7V7h1z"/><circle class="ic-fill" cx="15" cy="11" r="0.9"/>',
+  "banknote":      '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
+  "landmark":      '<line x1="3" y1="21" x2="21" y2="21"/><line x1="6" y1="21" x2="6" y2="10"/><line x1="10" y1="21" x2="10" y2="10"/><line x1="14" y1="21" x2="14" y2="10"/><line x1="18" y1="21" x2="18" y2="10"/><path d="M3 10h18L12 3z"/>',
+  "trending-up":   '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  "trending-down": '<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>',
+  "bitcoin":       '<circle cx="12" cy="12" r="10"/><path d="M9 7.5v9M13 7.5v9M8 10h6a2 2 0 0 1 0 4H8M8 14h7a2 2 0 0 1 0 4H8"/>',
+  "coins":         '<circle cx="9" cy="9" r="6"/><path d="M17.45 8.05A6 6 0 1 1 16 20.49"/>',
+  "shield":        '<path d="M12 22s8-4 8-11V4.5L12 2 4 4.5V11c0 7 8 11 8 11z"/><polyline points="9 12 11 14 15 10"/>',
+  "trophy":        '<path d="M8 4h8v7a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 3M16 6h3a3 3 0 0 1-3 3"/><path d="M10 15h4v2h-4zM8 21h8M12 17v4"/>',
+  "chart-pie":     '<path d="M21 12a9 9 0 1 1-9-9v9z"/><path d="M21 12A9 9 0 0 0 12 3v9h9z"/>',
+  "chart-bar":     '<line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="3" x2="3" y2="21"/><rect x="7" y="12" width="3" height="7"/><rect x="12" y="8" width="3" height="11"/><rect x="17" y="5" width="3" height="14"/>',
+  "chart-line":    '<line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="3" x2="3" y2="21"/><polyline points="6 15 10 11 13 14 20 6"/>',
+  "zap":           '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  "mountain":      '<path d="m3 20 6-13 4 7 2-3 6 9Z"/>',
+  "snowflake":     '<line x1="12" y1="2" x2="12" y2="22"/><line x1="4" y1="5" x2="20" y2="19"/><line x1="20" y1="5" x2="4" y2="19"/><line x1="2" y1="12" x2="22" y2="12"/>',
+  "utensils":      '<path d="M3 2v7a3 3 0 0 0 3 3v10"/><path d="M9 2v10"/><path d="M6 2v5"/><path d="M17 2c-1.5 2-2 5-2 7h3v13"/>',
+  "car":           '<path d="M5 13h14l-1.8-5.4A2 2 0 0 0 15.3 6H8.7a2 2 0 0 0-1.9 1.6z"/><path d="M3 17h18v-4H3z"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/><line x1="5" y1="20" x2="5" y2="17"/><line x1="19" y1="20" x2="19" y2="17"/>',
+  "tag":           '<path d="M20.59 13.41 13.42 20.59a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle class="ic-fill" cx="7" cy="7" r="1.2"/>',
+  "list":          '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+  "bolt":          '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'
+};
+function icon(name, size) {
+  const path = ICON_PATHS[name];
+  if (!path) return "";
+  const s = size ? `width="${size}" height="${size}"` : "";
+  return `<svg class="ic" ${s} viewBox="0 0 24 24" aria-hidden="true" focusable="false">${path}</svg>`;
+}
+// Replace every <i data-icon="name"></i> placeholder in `root` with the
+// corresponding SVG. Runs after init and after each render() so static
+// markup (nav, header) and dynamically rendered views both get icons.
+function hydrateIcons(root) {
+  (root || document).querySelectorAll("i[data-icon]").forEach(el => {
+    const name = el.getAttribute("data-icon");
+    const size = el.getAttribute("data-size");
+    el.outerHTML = icon(name, size);
+  });
+}
 const DAYS_IN_MONTH = (year, month) => new Date(year, month + 1, 0).getDate();
 const CAT_COLORS = {
   "Food & Grocery": "#e67e22",
@@ -643,17 +757,19 @@ const LEGACY_KEY = "ftv3";
 
 const uid = (pfx) => pfx + "_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 
-// Account types — icon + label pair. Users can pick any of these per account.
+// Account types — each maps an id to a label and an SVG icon name.
 const ACCOUNT_TYPES = [
-  { id: "cash",       icon: "💵", label: "Cash / Wallet" },
-  { id: "bank",       icon: "🏦", label: "Checking / Bank" },
-  { id: "savings",    icon: "🏛️", label: "Savings" },
-  { id: "investment", icon: "📈", label: "Investment" },
-  { id: "card",       icon: "💳", label: "Debit / Prepaid" },
-  { id: "crypto",     icon: "₿",  label: "Crypto" },
-  { id: "other",      icon: "💰", label: "Other" }
+  { id: "cash",       iconName: "banknote",      label: "Cash / Wallet" },
+  { id: "bank",       iconName: "landmark",      label: "Checking / Bank" },
+  { id: "savings",    iconName: "piggy-bank",    label: "Savings" },
+  { id: "investment", iconName: "trending-up",   label: "Investment" },
+  { id: "card",       iconName: "credit-card",   label: "Debit / Prepaid" },
+  { id: "crypto",     iconName: "bitcoin",       label: "Crypto" },
+  { id: "other",      iconName: "coins",         label: "Other" }
 ];
-const accountIcon = (acc) => (ACCOUNT_TYPES.find(t => t.id === acc?.type) || ACCOUNT_TYPES[6]).icon;
+const accountType = (acc) => ACCOUNT_TYPES.find(t => t.id === acc?.type) || ACCOUNT_TYPES[6];
+const accountIconName = (acc) => accountType(acc).iconName;
+const accountIcon = (acc) => icon(accountIconName(acc));
 const toISO = (y, m, d) => `${y}-${String(m+1).padStart(2,"0")}-${String(d+1).padStart(2,"0")}`;
 const parseISO = (s) => { const [y,m,d] = s.split("-").map(Number); return { y, m: m-1, d: d-1 }; };
 
@@ -882,7 +998,7 @@ function askDefaultAccountModal(accounts, defaultId) {
       `<option value="${a.id}" ${a.id === defaultId ? "selected" : ""}>${escapeHTML(a.name)}</option>`).join("");
     document.getElementById("modal-content").innerHTML = `
       <div class="modal-title">
-        <span>🔄 One-Time Migration</span>
+        <span><i data-icon="refresh"></i> One-Time Migration</span>
       </div>
       <p style="font-size:13px;color:var(--text);margin-bottom:10px">
         We're upgrading your data so you can tag each expense with how it was paid (credit card vs account).
@@ -1217,7 +1333,7 @@ function escapeHTML(s) {
 
 function toast(msg, isErr) {
   const t = document.getElementById("toast");
-  t.textContent = (isErr ? "✕ " : "✓ ") + msg;
+  t.innerHTML = `${icon(isErr ? "alert-circle" : "check")} <span>${escapeHTML(String(msg))}</span>`;
   t.className = "toast show" + (isErr ? " error" : "");
   setTimeout(() => t.className = "toast" + (isErr ? " error" : ""), 1800);
 }
@@ -1226,8 +1342,8 @@ async function appPrompt(message, defaultVal = "") {
   return new Promise(resolve => {
     document.getElementById("modal-content").innerHTML = `
       <div class="modal-title">
-        <span>📝 Input</span>
-        <button class="modal-close" onclick="window.__promptResolve(null)">✕</button>
+        <span><i data-icon="edit"></i> Input</span>
+        <button class="modal-close" onclick="window.__promptResolve(null)" aria-label="Close"><i data-icon="close"></i></button>
       </div>
       <p class="note" style="margin-bottom:12px">${escapeHTML(message)}</p>
       <input type="text" class="text-input" id="custom-prompt-input" value="${escapeHTML(defaultVal)}"
@@ -1251,8 +1367,8 @@ async function appConfirm(message) {
   return new Promise(resolve => {
     document.getElementById("modal-content").innerHTML = `
       <div class="modal-title">
-        <span>⚠️ Confirm</span>
-        <button class="modal-close" onclick="window.__confirmResolve(false)">✕</button>
+        <span><i data-icon="alert-triangle"></i> Confirm</span>
+        <button class="modal-close" onclick="window.__confirmResolve(false)" aria-label="Close"><i data-icon="close"></i></button>
       </div>
       <p style="font-size:14px;margin-bottom:16px;color:#fff">${escapeHTML(message)}</p>
       <div class="modal-actions">
@@ -1382,14 +1498,14 @@ function paidWithSelectHTML(selected, callbackName, { accountsOnly = false, allo
   if (accounts.length) {
     opts.push(`<optgroup label="Accounts">`);
     accounts.forEach(a => {
-      opts.push(`<option value="account:${a.id}" ${isSel("account", a.id) ? "selected" : ""}>${accountIcon(a)} ${escapeHTML(a.name)}</option>`);
+      opts.push(`<option value="account:${a.id}" ${isSel("account", a.id) ? "selected" : ""}>${escapeHTML(a.name)}</option>`);
     });
     opts.push(`</optgroup>`);
   }
   if (!accountsOnly && debts.length) {
     opts.push(`<optgroup label="Credit Cards">`);
     debts.forEach(d => {
-      opts.push(`<option value="debt:${d.id}" ${isSel("debt", d.id) ? "selected" : ""}>💳 ${escapeHTML(d.name)}</option>`);
+      opts.push(`<option value="debt:${d.id}" ${isSel("debt", d.id) ? "selected" : ""}>${escapeHTML(d.name)}</option>`);
     });
     opts.push(`</optgroup>`);
   }
@@ -1405,12 +1521,12 @@ function paidWithChipsHTML(selected, { accountsOnly = false } = {}) {
   accounts.forEach(a => {
     chips.push(`<button type="button" class="pw-chip ${isSel("account", a.id) ? "active" : ""}"
       data-pw="account:${a.id}"
-      onclick="selectQuickPaidWith('account','${a.id}')">${accountIcon(a)} ${escapeHTML(a.name)}</button>`);
+      onclick="selectQuickPaidWith('account','${a.id}')">${icon(accountIconName(a))} ${escapeHTML(a.name)}</button>`);
   });
   if (!accountsOnly) debts.forEach(d => {
     chips.push(`<button type="button" class="pw-chip debt ${isSel("debt", d.id) ? "active" : ""}"
       data-pw="debt:${d.id}"
-      onclick="selectQuickPaidWith('debt','${d.id}')">💳 ${escapeHTML(d.name)}</button>`);
+      onclick="selectQuickPaidWith('debt','${d.id}')">${icon("credit-card")} ${escapeHTML(d.name)}</button>`);
   });
   return `<div class="pw-row">${chips.join("")}</div>`;
 }
@@ -1628,14 +1744,14 @@ function addAccount() {
       class="btn ${t.id === "bank" ? "btn-primary" : "btn-ghost"}"
       style="justify-content:center;padding:14px 8px;flex-direction:column;gap:6px;font-size:11px"
       onclick="selectNewAcctType('${t.id}')">
-        <span style="font-size:22px">${t.icon}</span>
+        <span class="ic-lg" style="display:inline-flex">${icon(t.iconName, 22)}</span>
         <span>${t.label}</span>
     </button>`).join("");
 
   document.getElementById("modal-content").innerHTML = `
     <div class="modal-title">
-      <span>💎 New Account</span>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <span><i data-icon="gem"></i> New Account</span>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close"><i data-icon="close"></i></button>
     </div>
 
     <label class="debt-field-label" style="display:block;margin-bottom:6px">Name</label>
@@ -1860,7 +1976,7 @@ function renderDash() {
   </div>
 
   <div class="card">
-    <div class="card-title"><div class="card-title-left">📊 Income vs Expenses</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("chart-bar")}Income vs Expenses</div></div>
     <div class="chart-legend">
       <span><span class="legend-dot" style="background:var(--green)"></span>Income</span>
       <span><span class="legend-dot" style="background:var(--red)"></span>Expenses</span>
@@ -1870,7 +1986,7 @@ function renderDash() {
   </div>
 
   <div class="card">
-    <div class="card-title"><div class="card-title-left">📈 Cumulative Balance</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("chart-line")}Cumulative Balance</div></div>
     <div class="bar-chart" style="height:100px">${cumBars}</div>
     <div class="bar-labels">${barLabels}</div>
     <div style="font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
@@ -1879,7 +1995,7 @@ function renderDash() {
   </div>
 
   ${sortedCats.length > 0 ? `<div class="card">
-    <div class="card-title"><div class="card-title-left">🍕 Variable Spending</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("chart-pie")}Variable Spending</div></div>
     ${catBars}
     <div class="total-row" style="padding-top:12px">
       <span class="total-label text-dim">Variable Total</span>
@@ -1921,7 +2037,8 @@ function renderDaily() {
 
     const txRows = txs.length ? `<div class="tx-list">${txs.map(t => {
       const pw = t.paidWith;
-      const pwLabel = pw ? (pw.kind === "debt" ? `💳 ${escapeHTML(paidWithLabel(pw))}` : `🏦 ${escapeHTML(paidWithLabel(pw))}`) : "—";
+      const pwIcon = pw ? (pw.kind === "debt" ? icon("credit-card") : icon(accountIconName(getAccount(pw.id)))) : "";
+      const pwLabel = pw ? `${pwIcon} ${escapeHTML(paidWithLabel(pw))}` : "—";
       const pwClass = pw?.kind === "debt" ? "debt" : "account";
       return `<div class="tx-row">
         <span class="tx-cat-dot" style="background:${colorFor(t.category)}"></span>
@@ -1933,7 +2050,7 @@ function renderDaily() {
           </div>
         </div>
         <span class="tx-amt">${fmt(t.amount)}</span>
-        <button class="delete-btn" onclick="handleDeleteTx('${t.id}')">🗑</button>
+        <button class="delete-btn" onclick="handleDeleteTx('${t.id}')">${icon("trash")}</button>
       </div>`;
     }).join("")}</div>` : `<div class="empty" style="padding:18px 10px"><div style="opacity:0.6">No transactions yet — tap the button below to add one.</div></div>`;
 
@@ -1946,12 +2063,12 @@ function renderDaily() {
     const pwOpts = (() => {
       const opts = [];
       opts.push(`<optgroup label="Accounts">`);
-      DATA.accounts.forEach(a => opts.push(`<option value="account:${a.id}" ${pwVal === `account:${a.id}` ? "selected" : ""}>🏦 ${escapeHTML(a.name)}</option>`));
+      DATA.accounts.forEach(a => opts.push(`<option value="account:${a.id}" ${pwVal === `account:${a.id}` ? "selected" : ""}>${escapeHTML(a.name)}</option>`));
       opts.push(`</optgroup>`);
       const cards = DATA.debts.filter(d => d.isPaymentMethod);
       if (cards.length) {
         opts.push(`<optgroup label="Credit Cards">`);
-        cards.forEach(d => opts.push(`<option value="debt:${d.id}" ${pwVal === `debt:${d.id}` ? "selected" : ""}>💳 ${escapeHTML(d.name)}</option>`));
+        cards.forEach(d => opts.push(`<option value="debt:${d.id}" ${pwVal === `debt:${d.id}` ? "selected" : ""}>${escapeHTML(d.name)}</option>`));
         opts.push(`</optgroup>`);
       }
       return opts.join("");
@@ -1987,7 +2104,7 @@ function renderDaily() {
             value="${escapeHTML(draft.note || "")}"
             oninput="addDraft.note=this.value"/>
         </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px" onclick="commitDailyDraft(${m},${activeDay})">+ Add Expense</button>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px" onclick="commitDailyDraft(${m},${activeDay})">${icon("plus")} Add Expense</button>
         <button class="btn-ghost btn" style="margin-top:8px;width:100%;justify-content:center" onclick="activeDay=null;addDraft=null;render()">Close</button>
       </div>
     </div>`;
@@ -2004,7 +2121,7 @@ function renderDaily() {
 
   <div class="card">
     <div class="card-title">
-      <div class="card-title-left">📅 ${MONTHS[m]} ${currentYear}</div>
+      <div class="card-title-left">${icon("calendar")}${MONTHS[m]} ${currentYear}</div>
       <span class="badge accent">${fmt(monthData.variable)}</span>
     </div>
     <p class="note">Tap a day to see its transactions · Today is highlighted in teal</p>
@@ -2013,20 +2130,20 @@ function renderDaily() {
   </div>
 
   <div class="card">
-    <div class="card-title"><div class="card-title-left">⚙️ Categories</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("tag")}Categories</div></div>
     ${vars.map(c => `
       <div class="form-row">
         <input type="text" class="editable-label" value="${escapeHTML(c)}"
           style="color:${colorFor(c)};font-weight:500"
           onblur="renameCategory('variable','${escapeHTML(c)}',this.value)"
           onkeydown="if(event.key==='Enter'){this.blur();}"/>
-        <button class="delete-btn" onclick="deleteCategory('variable','${escapeHTML(c)}')" title="Delete">🗑</button>
+        <button class="delete-btn" onclick="deleteCategory('variable','${escapeHTML(c)}')" title="Delete">${icon("trash")}</button>
       </div>`).join("")}
-    <button class="btn-add" onclick="addCategory('variable')">+ Add Category</button>
+    <button class="btn-add" onclick="addCategory('variable')">${icon("plus")} Add Category</button>
   </div>
 
   <div class="card">
-    <div class="card-title"><div class="card-title-left">📊 ${MONTHS_S[m]} Summary</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("chart-bar")}${MONTHS_S[m]} Summary</div></div>
     <div class="flex justify-between" style="font-size:12px;margin-bottom:6px">
       <span class="text-dim">Variable</span><span class="mono">${fmt(monthData.variable)}</span>
     </div>
@@ -2068,12 +2185,17 @@ async function handleDeleteTx(id) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// VIEW: BUDGET (Fixed + limits)
+// VIEW: FIXED EXPENSES (recurring monthly bills — rent, subs, etc.)
 // ═══════════════════════════════════════════════════════════════
-function renderBudget() {
+function renderFixed() {
   const m = currentMonth;
   const monthData = getMonthData(m);
   const fixedMap = monthFixedByCat(m);
+
+  // Annual totals across all fixed categories for a quick overview.
+  const annualFixed = Array.from({length: 12}, (_, i) => getMonthData(i).fixed);
+  const totAnnual = annualFixed.reduce((s, v) => s + v, 0);
+  const avgMonthly = totAnnual / 12;
 
   const fixedRows = yd().fixedCategories.map(f => {
     const row = fixedMap[f] || { amount: 0, paidWith: null };
@@ -2085,7 +2207,7 @@ function renderBudget() {
           onkeydown="if(event.key==='Enter'){this.blur();}"/>
         <div class="flex items-center gap-2">
           ${amtInput(row.amount || 0, `fixed|${m}|${f}`)}
-          <button class="delete-btn" onclick="deleteCategory('fixed','${escapeHTML(f)}')">🗑</button>
+          <button class="delete-btn" onclick="deleteCategory('fixed','${escapeHTML(f)}')">${icon("trash")}</button>
         </div>
       </div>
       <div class="flex items-center gap-2" style="gap:6px">
@@ -2095,11 +2217,48 @@ function renderBudget() {
     </div>`;
   }).join("");
 
-  // Register per-row callbacks (simple inline closures)
   yd().fixedCategories.forEach(f => {
     const key = `__fixedPW_${m}_${btoa(unescape(encodeURIComponent(f))).replace(/=/g,"")}`;
     window[key] = (pw) => changeFixedPaidWith(m, f, pw);
   });
+
+  return `
+  <div class="kpi-grid">
+    <div class="kpi" style="--accent-color:var(--orange)">
+      <div class="kpi-label">${MONTHS_S[m]} Fixed</div>
+      <div class="kpi-value" style="color:var(--orange)">${fmt(monthData.fixed)}</div>
+      <div class="kpi-sub">${yd().fixedCategories.length} categor${yd().fixedCategories.length === 1 ? "y" : "ies"}</div>
+    </div>
+    <div class="kpi" style="--accent-color:var(--accent)">
+      <div class="kpi-label">Year Total</div>
+      <div class="kpi-value" style="color:var(--accent)">${fmt(totAnnual)}</div>
+      <div class="kpi-sub">Avg ${fmt(avgMonthly)}/mo</div>
+    </div>
+  </div>
+
+  ${renderMonthTabs(m, "var(--orange)")}
+
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-left">${icon("lock")}${MONTHS[m]} Fixed Expenses</div>
+    </div>
+    <p class="note">Set these once per month (rent, insurance, subscriptions). Pick how each one gets paid — account or credit-card balances update automatically.</p>
+    ${fixedRows || `<div class="empty"><div class="empty-icon">${icon("lock", 32)}</div>No fixed categories yet</div>`}
+    <button class="btn-add" onclick="addCategory('fixed')">${icon("plus")} Add Fixed Expense</button>
+    <div class="total-row">
+      <span class="total-label" style="color:var(--orange)">Total Fixed</span>
+      <span class="total-val" style="color:var(--orange)">${fmt(monthData.fixed)}</span>
+    </div>
+  </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW: BUDGET (per-category limits for variable spending)
+// ═══════════════════════════════════════════════════════════════
+function renderBudget() {
+  const m = currentMonth;
+  const monthData = getMonthData(m);
 
   const budgetCards = yd().variableCategories.map(c => {
     const spent = monthData.catTotals[c] || 0;
@@ -2122,7 +2281,7 @@ function renderBudget() {
         </div>
         ${amtInput(budget, `budget|${c}`, "Limit")}
       </div>
-      ${pct >= 100 ? `<div style="font-size:10px;color:var(--red);margin-top:6px;font-weight:600">⚠️ Over budget by ${fmt(spent - budget)}</div>` : pct >= 80 ? `<div style="font-size:10px;color:var(--yellow);margin-top:6px;font-weight:600">⚠️ ${pct.toFixed(0)}% of budget used</div>` : ""}
+      ${pct >= 100 ? `<div style="font-size:10px;color:var(--red);margin-top:6px;font-weight:600;display:flex;align-items:center;gap:4px">${icon("alert-triangle")} Over budget by ${fmt(spent - budget)}</div>` : pct >= 80 ? `<div style="font-size:10px;color:var(--yellow);margin-top:6px;font-weight:600;display:flex;align-items:center;gap:4px">${icon("alert-triangle")} ${pct.toFixed(0)}% of budget used</div>` : ""}
     </div>`;
   }).join("");
 
@@ -2130,21 +2289,8 @@ function renderBudget() {
   ${renderMonthTabs(m, "var(--red)")}
 
   <div class="card">
-    <div class="card-title">
-      <div class="card-title-left">🔒 Fixed Expenses</div>
-    </div>
-    <p class="note">Set these once per month (rent, insurance, subs). Pick how each one gets paid — balances update automatically.</p>
-    ${fixedRows}
-    <button class="btn-add" onclick="addCategory('fixed')">+ Add Fixed Expense</button>
-    <div class="total-row">
-      <span class="total-label" style="color:var(--red)">Total Fixed</span>
-      <span class="total-val" style="color:var(--red)">${fmt(monthData.fixed)}</span>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title"><div class="card-title-left">🎯 Monthly Budget Limits</div></div>
-    <p class="note">Limit per variable category — 80% = yellow, 100% = red.</p>
+    <div class="card-title"><div class="card-title-left">${icon("target")}Monthly Budget Limits</div></div>
+    <p class="note">Limit per variable category · 80% = yellow, 100% = red. Fixed expenses live on their own page now.</p>
     ${budgetCards}
   </div>
   `;
@@ -2168,7 +2314,7 @@ function renderIncome() {
           onkeydown="if(event.key==='Enter'){this.blur();}"/>
         <div class="flex items-center gap-2">
           ${amtInput(row.amount || 0, `income|${m}|${c}`)}
-          <button class="delete-btn" onclick="deleteCategory('income','${escapeHTML(c)}')">🗑</button>
+          <button class="delete-btn" onclick="deleteCategory('income','${escapeHTML(c)}')">${icon("trash")}</button>
         </div>
       </div>
       <div class="flex items-center gap-2" style="gap:6px">
@@ -2195,9 +2341,9 @@ function renderIncome() {
   ${renderMonthTabs(m, "var(--green)")}
 
   <div class="card">
-    <div class="card-title"><div class="card-title-left">💵 ${MONTHS[m]} Income</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("wallet")}${MONTHS[m]} Income</div></div>
     ${rows}
-    <button class="btn-add" onclick="addCategory('income')">+ Add Income Source</button>
+    <button class="btn-add" onclick="addCategory('income')">${icon("plus")} Add Income Source</button>
     <div class="total-row">
       <span class="total-label" style="color:var(--green)">Total Income</span>
       <span class="total-val" style="color:var(--green)">${fmt(monthData.income)}</span>
@@ -2214,7 +2360,7 @@ function renderIncome() {
   </div>
 
   <div class="card">
-    <div class="card-title"><div class="card-title-left">📊 Income Trend</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("trending-up")}Income Trend</div></div>
     <div class="bar-chart" style="height:110px">${incBars}</div>
     <div class="bar-labels">${incLabels}</div>
   </div>
@@ -2237,7 +2383,7 @@ function renderDebt() {
         <input type="text" class="debt-name-input" value="${escapeHTML(d.name)}"
           onblur="onTextBlur(this,'debtName|${d.id}')"
           onkeydown="if(event.key==='Enter'){this.blur();}"/>
-        <button class="delete-btn" onclick="deleteDebt('${d.id}')">🗑</button>
+        <button class="delete-btn" onclick="deleteDebt('${d.id}')">${icon("trash")}</button>
       </div>
       <div class="debt-grid">
         <div>
@@ -2313,11 +2459,11 @@ function renderDebt() {
     const av = simulate("avalanche");
     const sn = simulate("snowball");
     avSim = `<div class="flex justify-between" style="padding:6px 0;font-size:12px">
-      <span class="text-dim">🏔️ Avalanche (highest rate first)</span>
+      <span class="text-dim" style="display:inline-flex;align-items:center;gap:6px">${icon("mountain")} Avalanche (highest rate first)</span>
       <span class="mono">${av.months} mo · <span style="color:var(--red)">${fmt(av.totalInterest)}</span> interest</span>
     </div>`;
     snSim = `<div class="flex justify-between" style="padding:6px 0;font-size:12px">
-      <span class="text-dim">❄️ Snowball (smallest first)</span>
+      <span class="text-dim" style="display:inline-flex;align-items:center;gap:6px">${icon("snowflake")} Snowball (smallest first)</span>
       <span class="mono">${sn.months} mo · <span style="color:var(--red)">${fmt(sn.totalInterest)}</span> interest</span>
     </div>`;
   }
@@ -2355,22 +2501,22 @@ function renderDebt() {
 
   <div class="card">
     <div class="card-title">
-      <div class="card-title-left">💳 My Debts</div>
-      <button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="addDebt()">+ Add</button>
+      <div class="card-title-left">${icon("credit-card")}My Debts</div>
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="addDebt()">${icon("plus")} Add</button>
     </div>
     <p class="note">Uncheck "Usable as payment method" for non-credit debts (e.g. personal loans). Balance auto-decreases as you log payments.</p>
-    ${overviewCards || '<div class="empty"><div class="empty-icon">🎉</div>No debts tracked</div>'}
+    ${overviewCards || `<div class="empty"><div class="empty-icon">${icon("check-circle", 32)}</div>No debts tracked</div>`}
   </div>
 
   ${avSim ? `<div class="card">
-    <div class="card-title"><div class="card-title-left">🎯 Debt Payoff Projection</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("target")}Debt Payoff Projection</div></div>
     <p class="note">Based on avg ${fmt(avgMonthlyPay)}/month (actual pace this year). Interest rate required for accuracy.</p>
     ${avSim}${snSim}
   </div>` : ""}
 
   ${renderMonthTabs(m, "var(--purple)")}
   <div class="card">
-    <div class="card-title"><div class="card-title-left">💳 ${MONTHS[m]} Payments</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("credit-card")}${MONTHS[m]} Payments</div></div>
     ${payRows}
     <div class="total-row">
       <span class="total-label" style="color:var(--purple)">Month Total</span>
@@ -2391,13 +2537,13 @@ function renderWealth() {
 
   const accountCards = DATA.accounts.map(acc => {
     const typeOpts = ACCOUNT_TYPES.map(t =>
-      `<option value="${t.id}" ${t.id === (acc.type || "other") ? "selected" : ""}>${t.icon} ${t.label}</option>`
+      `<option value="${t.id}" ${t.id === (acc.type || "other") ? "selected" : ""}>${t.label}</option>`
     ).join("");
     const neg = (Number(acc.balance) || 0) < 0;
     return `<div style="padding:11px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px">
       <div class="flex justify-between items-center gap-2">
-        <div class="form-label" style="gap:6px">
-          <span style="font-size:18px">${accountIcon(acc)}</span>
+        <div class="form-label" style="gap:8px">
+          <span class="ic-lg" style="color:var(--teal);display:inline-flex;align-items:center">${icon(accountIconName(acc), 20)}</span>
           <input type="text" class="editable-label" value="${escapeHTML(acc.name)}"
             onblur="onTextBlur(this,'accountName|${acc.id}')"
             onkeydown="if(event.key==='Enter'){this.blur();}"/>
@@ -2407,7 +2553,7 @@ function renderWealth() {
             style="color:${neg ? 'var(--red)' : 'inherit'}"
             value="${acc.balance || ""}" placeholder="0"
             onblur="onAmtBlur(this,'account|${acc.id}|balance')" onfocus="this.select()"/>
-          <button class="delete-btn" onclick="deleteAccount('${acc.id}')">🗑</button>
+          <button class="delete-btn" onclick="deleteAccount('${acc.id}')">${icon("trash")}</button>
         </div>
       </div>
       <div class="flex items-center gap-2" style="gap:6px">
@@ -2429,7 +2575,7 @@ function renderWealth() {
         <input type="text" class="goal-name-input" value="${escapeHTML(g.name)}"
           onblur="onTextBlur(this,'goalName|${g.id}')"
           onkeydown="if(event.key==='Enter'){this.blur();}"/>
-        <button class="delete-btn" onclick="deleteGoal('${g.id}')">🗑</button>
+        <button class="delete-btn" onclick="deleteGoal('${g.id}')">${icon("trash")}</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
         <div>
@@ -2467,8 +2613,8 @@ function renderWealth() {
 
   <div class="card">
     <div class="card-title">
-      <div class="card-title-left">💎 Accounts & Assets</div>
-      <button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="addAccount()">+ Add</button>
+      <div class="card-title-left">${icon("gem")}Accounts & Assets</div>
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="addAccount()">${icon("plus")} Add</button>
     </div>
     <p class="note">Balances auto-adjust as you log transactions (when auto-sync is on).</p>
     ${accountCards}
@@ -2480,21 +2626,21 @@ function renderWealth() {
 
   <div class="card">
     <div class="card-title">
-      <div class="card-title-left">🎯 Savings Goals</div>
-      <button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="addGoal()">+ Add</button>
+      <div class="card-title-left">${icon("target")}Savings Goals</div>
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="addGoal()">${icon("plus")} Add</button>
     </div>
-    ${goalCards || '<div class="empty"><div class="empty-icon">🎯</div>No goals yet</div>'}
+    ${goalCards || `<div class="empty"><div class="empty-icon">${icon("target", 32)}</div>No goals yet</div>`}
   </div>
 
   ${renderMonthTabs(m, "var(--teal)")}
   <div class="card">
-    <div class="card-title"><div class="card-title-left">💰 ${MONTHS[m]} Savings</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("piggy-bank")}${MONTHS[m]} Savings</div></div>
     <div class="form-row">
-      <div class="form-label">🎯 Target</div>
+      <div class="form-label">${icon("target")} Target</div>
       ${amtInput(md.savings?.target, `savings|${m}|target`)}
     </div>
     <div class="form-row">
-      <div class="form-label">✅ Actual</div>
+      <div class="form-label">${icon("check-circle")} Actual</div>
       ${amtInput(md.savings?.actual, `savings|${m}|actual`)}
     </div>
     <div class="total-row">
@@ -2522,7 +2668,7 @@ function renderInsights() {
       if (Math.abs(diff) > 10) {
         insights.push({
           level: diff > 0 ? "warning" : "positive",
-          icon: diff > 0 ? "📈" : "📉",
+          icon: diff > 0 ? "trending-up" : "trending-down",
           title: `${MONTHS_S[curM]} spending is ${diff > 0 ? "up" : "down"} ${Math.abs(diff).toFixed(0)}% vs ${MONTHS_S[curM-1]}`,
           body: `This month: ${fmt(curExp)} · Last month: ${fmt(prevExp)} · Change: ${fmt(curExp - prevExp, true)}`
         });
@@ -2538,7 +2684,7 @@ function renderInsights() {
         const diff = ((curCat - prevCat) / prevCat * 100);
         if (diff > 30 && curCat > 50) {
           insights.push({
-            level: "warning", icon: "⚠️",
+            level: "warning", icon: "alert-triangle",
             title: `${cat} spending up ${diff.toFixed(0)}% this month`,
             body: `${MONTHS_S[curM-1]}: ${fmt(prevCat)} → ${MONTHS_S[curM]}: ${fmt(curCat)}`
           });
@@ -2548,11 +2694,11 @@ function renderInsights() {
   });
 
   if (a.balance < 0) {
-    insights.push({ level: "critical", icon: "🚨",
+    insights.push({ level: "critical", icon: "alert-circle",
       title: `You're running a deficit of ${fmt(Math.abs(a.balance))}`,
       body: `Expenses exceed income by ${fmt(Math.abs(a.balance)/12)}/month on average.` });
   } else if (a.balance > 0) {
-    insights.push({ level: "positive", icon: "💰",
+    insights.push({ level: "positive", icon: "coins",
       title: `You have a surplus of ${fmt(a.balance)}`,
       body: `Great work! Consider putting this toward debt or savings.` });
   }
@@ -2563,7 +2709,7 @@ function renderInsights() {
     return budget > 0 && spent > budget;
   });
   if (overBudget.length > 0) {
-    insights.push({ level: "warning", icon: "🎯",
+    insights.push({ level: "warning", icon: "target",
       title: `Over budget in ${overBudget.length} ${overBudget.length === 1 ? "category" : "categories"}`,
       body: `This month: ${overBudget.join(", ")}. Adjust spending or raise the limit.` });
   }
@@ -2572,20 +2718,20 @@ function renderInsights() {
   if (sortedCats.length > 0 && sortedCats[0][1] > 0) {
     const [topCat, topVal] = sortedCats[0];
     const pct = a.totVar > 0 ? (topVal / a.totVar * 100) : 0;
-    insights.push({ level: pct > 40 ? "warning" : "positive", icon: "🏆",
+    insights.push({ level: pct > 40 ? "warning" : "positive", icon: "trophy",
       title: `${topCat} is your biggest spending category`,
       body: `${fmt(topVal)} this year · ${pct.toFixed(0)}% of variable. ${pct > 40 ? "Dominating your budget." : "Reasonable share."}` });
   }
 
   if (a.totalDebt > 0) {
     if (a.totDebtPaid === 0) {
-      insights.push({ level: "critical", icon: "💳",
+      insights.push({ level: "critical", icon: "credit-card",
         title: "No debt payments logged yet",
         body: `You have ${fmt(a.totalDebt)} in debt. Start with even small consistent payments.` });
     } else {
       const avgMonthlyPay = a.totDebtPaid / Math.max(1, curM + 1);
       const monthsLeft = avgMonthlyPay > 0 ? a.debtRemaining / avgMonthlyPay : 0;
-      insights.push({ level: "positive", icon: "💪",
+      insights.push({ level: "positive", icon: "check-circle",
         title: `${fmt(a.totDebtPaid)} paid this year`,
         body: `At current rate (${fmt(avgMonthlyPay)}/month avg), debt-free in ~${monthsLeft.toFixed(0)} more months.` });
     }
@@ -2595,7 +2741,7 @@ function renderInsights() {
     const savingsRate = a.totSaved / a.totInc * 100;
     insights.push({
       level: savingsRate >= 15 ? "positive" : savingsRate >= 5 ? "warning" : "critical",
-      icon: "💸",
+      icon: "piggy-bank",
       title: `Savings rate: ${savingsRate.toFixed(1)}%`,
       body: savingsRate >= 15 ? "Excellent — on track for financial health." :
             savingsRate >= 5 ? "Decent. Target 15-20% for long-term stability." :
@@ -2609,7 +2755,7 @@ function renderInsights() {
     const monthsCovered = emergencyGoal.saved / avgMonthlyExp;
     insights.push({
       level: monthsCovered >= 3 ? "positive" : monthsCovered >= 1 ? "warning" : "critical",
-      icon: "🛡️",
+      icon: "shield",
       title: `Emergency fund covers ${monthsCovered.toFixed(1)} months`,
       body: monthsCovered >= 3 ? "You're well-protected." : `Target 3-6 months = ${fmt(avgMonthlyExp * 3)}-${fmt(avgMonthlyExp * 6)}`
     });
@@ -2624,7 +2770,7 @@ function renderInsights() {
     const pct = ccSpendThisMonth / totalSpendThisMonth * 100;
     insights.push({
       level: pct > 50 ? "warning" : "positive",
-      icon: "💳",
+      icon: "credit-card",
       title: `${pct.toFixed(0)}% of this month's spending is on credit cards`,
       body: pct > 50 ? "Relying heavily on credit — interest compounds fast. Aim to pay this down each month." : `${fmt(ccSpendThisMonth)} of ${fmt(totalSpendThisMonth)} went to cards this month.`
     });
@@ -2633,12 +2779,12 @@ function renderInsights() {
   const advisorTips = [];
   const restCat = Object.keys(a.catTotals).find(c => /restaurant/i.test(c));
   if (restCat && a.catTotals[restCat] > a.totVar * 0.15) {
-    advisorTips.push({ icon: "🍽️", title: `Restaurant spending is high`,
+    advisorTips.push({ icon: "utensils", title: `Restaurant spending is high`,
       body: `${fmt(a.catTotals[restCat])} this year. Reducing 30% saves ${fmt(a.catTotals[restCat] * 0.3)}.` });
   }
   const transCat = Object.keys(a.catTotals).find(c => /transport/i.test(c));
   if (transCat && a.catTotals[transCat] > 1000) {
-    advisorTips.push({ icon: "🚗", title: `Transportation costs are significant`,
+    advisorTips.push({ icon: "car", title: `Transportation costs are significant`,
       body: `${fmt(a.catTotals[transCat])} this year. Monthly transit passes or carpooling may help.` });
   }
   const incomes = monthly.map(m => m.income).filter(v => v > 0);
@@ -2647,27 +2793,27 @@ function renderInsights() {
     const variance = incomes.reduce((s,v) => s + Math.pow(v - avgInc, 2), 0) / incomes.length;
     const cv = Math.sqrt(variance) / avgInc;
     if (cv > 0.4) {
-      advisorTips.push({ icon: "📊", title: "Your income is highly variable",
+      advisorTips.push({ icon: "chart-bar", title: "Your income is highly variable",
         body: "Build a larger emergency fund to smooth out low-income months. Target: 6 months of expenses." });
     }
   }
 
   return `
   <div class="card">
-    <div class="card-title"><div class="card-title-left">🧠 Smart Insights</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("sparkles")}Smart Insights</div></div>
     <p class="note">Auto-generated from your data — updates as you log expenses.</p>
-    ${insights.length === 0 ? '<div class="empty"><div class="empty-icon">📊</div>Add more data to see insights</div>' : insights.map(ins => `
+    ${insights.length === 0 ? `<div class="empty"><div class="empty-icon">${icon("chart-bar", 32)}</div>Add more data to see insights</div>` : insights.map(ins => `
       <div class="insight ${ins.level}">
-        <div class="insight-title">${ins.icon} ${escapeHTML(ins.title)}</div>
+        <div class="insight-title">${icon(ins.icon)} ${escapeHTML(ins.title)}</div>
         <div class="insight-body">${escapeHTML(ins.body)}</div>
       </div>`).join("")}
   </div>
 
   ${advisorTips.length > 0 ? `<div class="card">
-    <div class="card-title"><div class="card-title-left">💡 Advisor Tips</div></div>
+    <div class="card-title"><div class="card-title-left">${icon("lightbulb")}Advisor Tips</div></div>
     ${advisorTips.map(t => `
       <div class="insight">
-        <div class="insight-title">${t.icon} ${escapeHTML(t.title)}</div>
+        <div class="insight-title">${icon(t.icon)} ${escapeHTML(t.title)}</div>
         <div class="insight-body">${escapeHTML(t.body)}</div>
       </div>`).join("")}
   </div>` : ""}
@@ -2695,8 +2841,8 @@ function openQuickAdd() {
 
   document.getElementById("modal-content").innerHTML = `
     <div class="modal-title">
-      <span>⚡ Quick Add</span>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <span><i data-icon="zap"></i> Quick Add</span>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close"><i data-icon="close"></i></button>
     </div>
     <p class="note">Log a variable expense · ${MONTHS[m]} ${d + 1}, ${currentYear}</p>
 
@@ -2804,12 +2950,12 @@ function openSettings() {
 
   document.getElementById("modal-content").innerHTML = `
     <div class="modal-title">
-      <span>⚙️ Settings & Data</span>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <span><i data-icon="settings"></i> Settings &amp; Data</span>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close"><i data-icon="close"></i></button>
     </div>
 
     <div style="margin:16px 0;padding:14px;border-radius:12px;background:var(--accent-soft);border:1px solid rgba(108,92,231,0.3)">
-      <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#fff">☁️ iCloud Sync</div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#fff;display:flex;align-items:center;gap:6px"><i data-icon="cloud"></i> iCloud Sync</div>
       <p class="note" style="margin-bottom:10px;color:#c9b8f5">
         Keep your phone and laptop in sync by saving one shared file to iCloud Drive.
         Tap <b>Sync to iCloud</b>, pick <b>Save to Files → iCloud Drive</b>, and always overwrite the same file.
@@ -2817,37 +2963,37 @@ function openSettings() {
       </p>
       <div class="flex gap-2" style="flex-direction:column">
         <button class="btn btn-primary" style="justify-content:center" onclick="syncToICloud()">
-          ⬆️ Sync to iCloud ${canShare ? "(via Share sheet)" : "(download)"}
+          <i data-icon="upload-cloud"></i> Sync to iCloud ${canShare ? "(via Share sheet)" : "(download)"}
         </button>
         <label class="btn btn-ghost" style="justify-content:center;cursor:pointer">
-          ⬇️ Pull from iCloud
+          <i data-icon="download-cloud"></i> Pull from iCloud
           <input type="file" accept=".json,application/json" style="display:none" onchange="if(this.files[0])syncFromICloudPick(this.files[0])"/>
         </label>
       </div>
       <div id="sync-status" class="note" style="margin-top:10px;color:#9d8ee0">${escapeHTML(lastSyncLabel)}</div>
-      <p class="note" style="margin-top:8px;font-size:10px">
-        💡 First-time tip: on iPhone, after tapping <b>Save to Files</b>, long-press the filename and rename it to <code>finance-tracker-sync.json</code>. Always overwrite this same file from both devices.
+      <p class="note" style="margin-top:8px;font-size:10px;display:flex;align-items:flex-start;gap:6px">
+        <i data-icon="lightbulb"></i> <span>First-time tip: on iPhone, after tapping <b>Save to Files</b>, long-press the filename and rename it to <code>finance-tracker-sync.json</code>. Always overwrite this same file from both devices.</span>
       </p>
     </div>
 
     <div style="margin:16px 0">
-      <div style="font-size:12px;font-weight:700;margin-bottom:8px">📦 Manual Backup</div>
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i data-icon="archive"></i> Manual Backup</div>
       <p class="note">Download a dated snapshot (keep alongside your iCloud sync file for safety).</p>
       <div class="flex gap-2" style="margin-top:10px">
-        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="exportData()">⬇️ Export Dated Backup</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="exportData()"><i data-icon="download"></i> Export Dated Backup</button>
         <label class="btn btn-ghost" style="flex:1;justify-content:center;cursor:pointer">
-          ⬆️ Import Any Backup
+          <i data-icon="upload"></i> Import Any Backup
           <input type="file" accept=".json" style="display:none" onchange="if(this.files[0])importData(this.files[0])"/>
         </label>
       </div>
       ${DATA.lastBackup ? `<div class="note" style="margin-top:8px">Last backup: ${new Date(DATA.lastBackup).toLocaleDateString()}</div>` : ""}
-      ${hasV3Snap ? `<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="restoreV3Snapshot()">↺ Restore v3 snapshot</button>` : ""}
+      ${hasV3Snap ? `<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="restoreV3Snapshot()"><i data-icon="refresh"></i> Restore v3 snapshot</button>` : ""}
     </div>
 
     <div class="divider"></div>
 
     <div style="margin:16px 0">
-      <div style="font-size:12px;font-weight:700;margin-bottom:8px">💱 Currency Symbol</div>
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i data-icon="dollar-sign"></i> Currency Symbol</div>
       <input type="text" class="text-input" value="${escapeHTML(DATA.currency || "$")}" maxlength="3"
         onblur="DATA.currency=this.value.trim()||'$';save();render();" style="max-width:100px"/>
       <p class="note" style="margin-top:6px">Display only — no FX conversion.</p>
@@ -2856,7 +3002,7 @@ function openSettings() {
     <div class="divider"></div>
 
     <div style="margin:16px 0">
-      <div style="font-size:12px;font-weight:700;margin-bottom:8px">📅 Year</div>
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i data-icon="calendar"></i> Year</div>
       ${renderYearSelector()}
       <p class="note" style="margin-top:8px">Each year keeps its own transactions.</p>
     </div>
@@ -2864,9 +3010,9 @@ function openSettings() {
     <div class="divider"></div>
 
     <div style="margin:16px 0">
-      <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--red)">⚠️ Danger Zone</div>
-      <button class="btn btn-danger" style="width:100%;justify-content:center;margin-bottom:8px" onclick="resetYear()">🗑 Reset ${currentYear} only</button>
-      <button class="btn btn-danger" style="width:100%;justify-content:center" onclick="resetAll()">🔥 Delete ALL data</button>
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--red);display:flex;align-items:center;gap:6px"><i data-icon="alert-triangle"></i> Danger Zone</div>
+      <button class="btn btn-danger" style="width:100%;justify-content:center;margin-bottom:8px" onclick="resetYear()"><i data-icon="trash"></i> Reset ${currentYear} only</button>
+      <button class="btn btn-danger" style="width:100%;justify-content:center" onclick="resetAll()"><i data-icon="flame"></i> Delete ALL data</button>
     </div>
 
     <div class="modal-actions">
@@ -2903,10 +3049,11 @@ function closeModal() {
 function render() {
   const el = document.getElementById("view-content");
   const views = {
-    dash: renderDash, daily: renderDaily, budget: renderBudget,
+    dash: renderDash, daily: renderDaily, fixed: renderFixed, budget: renderBudget,
     income: renderIncome, debt: renderDebt, wealth: renderWealth, insights: renderInsights
   };
   el.innerHTML = (views[currentView] || renderDash)();
+  hydrateIcons(el);
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === currentView));
 }
 
@@ -2994,6 +3141,13 @@ if ("serviceWorker" in navigator) {
 // ═══════════════════════════════════════════════════════════════
 (async function init() {
   await load();
+  hydrateIcons(document);
+  // Any time modal content is swapped (settings, quick-add, prompts, etc.)
+  // auto-hydrate the <i data-icon> placeholders inside it.
+  const modalHost = document.getElementById("modal-content");
+  if (modalHost && typeof MutationObserver !== "undefined") {
+    new MutationObserver(() => hydrateIcons(modalHost)).observe(modalHost, { childList: true, subtree: false });
+  }
   setView("dash");
 })();
 </script>
