@@ -51,14 +51,17 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html,body { overscroll-behavior: none; }
+  /* Solid dark fill on html/body matches <meta theme-color> so the iOS
+     Safari overscroll area, safe-area insets, and the strip behind the
+     URL/tool bar never flash white. The gradient itself is painted by a
+     fixed pseudo-element below so it stays put regardless of how the
+     Safari chrome animates in and out. */
   html {
-    background: linear-gradient(160deg, #0a0a1a 0%, #141428 50%, #0d1b2a 100%);
-    background-attachment: fixed;
+    background-color: #0a0a1a;
     min-height: 100%;
   }
   body {
-    background: linear-gradient(160deg, #0a0a1a 0%, #141428 50%, #0d1b2a 100%);
-    background-attachment: fixed;
+    background-color: #0a0a1a;
     color: var(--text);
     font-family: 'DM Sans', system-ui, sans-serif;
     min-height: 100dvh;
@@ -66,6 +69,15 @@
     -webkit-font-smoothing: antialiased;
     padding-bottom: env(safe-area-inset-bottom);
     overscroll-behavior-y: contain;
+    position: relative;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(160deg, #0a0a1a 0%, #141428 50%, #0d1b2a 100%);
+    pointer-events: none;
   }
   /* When a form input is focused and the iOS keyboard is open, lock body to
      the visible viewport height and let .app scroll internally. This prevents
@@ -83,6 +95,16 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
+    /* Extra bottom room so inputs near the end of the page can always
+       be scrolled above the iOS keyboard. */
+    padding-bottom: 60vh;
+  }
+  /* Give focused form fields a scroll margin so scrollIntoView lands them
+     comfortably inside the visible viewport rather than flush against the
+     keyboard. */
+  .amt-input, .text-input, .select-input, .editable-label, textarea, input {
+    scroll-margin-top: 80px;
+    scroll-margin-bottom: 120px;
   }
   .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500; letter-spacing: -0.3px; }
   ::-webkit-scrollbar { width: 0; display: none; }
@@ -2912,9 +2934,12 @@ function _revealFocused() {
   const rect = el.getBoundingClientRect();
   const body = document.body;
   const app = document.getElementById("app");
-  const scroller = (body.classList.contains("kb-lock") && app) ? app : (document.scrollingElement || document.documentElement);
+  const locked = body.classList.contains("kb-lock");
+  const scroller = (locked && app) ? app : (document.scrollingElement || document.documentElement);
   const topMargin = 80;
-  const bottomMargin = 24;
+  // Keep a generous gap above the keyboard so the value the user is typing
+  // (and the row label) stays visible.
+  const bottomMargin = 140;
   if (rect.bottom > visibleH - bottomMargin) {
     const delta = rect.bottom - (visibleH - bottomMargin);
     scroller.scrollTop = (scroller.scrollTop || 0) + delta;
