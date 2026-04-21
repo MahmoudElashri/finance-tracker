@@ -147,7 +147,7 @@
 
   /* ── PILL TABS ──────────────────────── */
   .tab-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 14px; padding: 4px; background: var(--card); border-radius: 10px; border: 1px solid var(--border); }
-  .tab-row-scroll { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 4px; background: var(--card); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 14px; }
+  .tab-row-scroll { position: relative; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 4px; background: var(--card); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 14px; }
   .tab {
     padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer;
     font-size: 11px; font-weight: 600; font-family: inherit;
@@ -3291,6 +3291,26 @@ function render() {
   el.innerHTML = (views[currentView] || renderDash)();
   hydrateIcons(el);
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === currentView));
+  // Re-rendering blows away the month-tabs' horizontal scroll position, so the
+  // active tab (Oct–Dec on a small screen) slides off to the right. Defer one
+  // animation frame so layout is complete, then center the active tab in its
+  // own scroll container (window scroll is left alone).
+  requestAnimationFrame(centerActiveTabs);
+}
+
+function centerActiveTabs() {
+  document.querySelectorAll(".tab-row-scroll").forEach(row => {
+    const active = row.querySelector(".tab.active");
+    if (!active) return;
+    // offsetLeft is relative to the nearest positioned ancestor which is NOT
+    // guaranteed to be the row — use bounding rects for a robust calculation.
+    const rowRect = row.getBoundingClientRect();
+    const actRect = active.getBoundingClientRect();
+    const activeLeftInRow = (actRect.left - rowRect.left) + row.scrollLeft;
+    const target = activeLeftInRow - (row.clientWidth - actRect.width) / 2;
+    const maxScroll = row.scrollWidth - row.clientWidth;
+    row.scrollLeft = Math.max(0, Math.min(target, maxScroll));
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
