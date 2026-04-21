@@ -8,7 +8,10 @@ tagging, installable as a PWA on iOS and Android.
 - Daily expense log with individual transactions (amount, category, payment
   method, note)
 - **Fixed expenses** on their own dedicated page (rent, subs, bills) with a
-  current-month / annual / average KPI row
+  current-month / annual / average KPI row, plus a **Copy from…** button
+  that stamps another month's values onto the current one — amounts do not
+  auto-repeat because real bills shift (moving apartments, new plan, etc.),
+  so each month stays editable
 - Budget limits page, now focused purely on variable-spend caps
 - Income tracking with "received to" account
 - Debt tracking with auto-payoff (avalanche / snowball) projection
@@ -89,7 +92,7 @@ must be on the same Wi-Fi). Install as above.
 If you edit `index.html` and want iOS to see the update:
 
 1. Open `sw.js` and bump the `CACHE_VERSION` string
-   (e.g. `"ft-v4.0.9"`). The current version is `ft-v4.0.8`.
+   (e.g. `"ft-v4.1.0"`). The current version is `ft-v4.0.9`.
 2. Push/upload again.
 3. On iPhone, open the app once while online — the new service worker
    activates; next launch uses the new files.

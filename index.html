@@ -335,6 +335,39 @@
   }
   .btn-add:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 
+  .btn-inline {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text-dim); font-family: inherit;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-inline:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .btn-inline .ic { width: 12px; height: 12px; }
+
+  /* Month picker for the Fixed-page "Copy from" modal */
+  .copy-month-list {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-bottom: 6px;
+    max-height: 50dvh; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .btn-copy-month {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--card-soft, rgba(255,255,255,0.04));
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text); font-family: inherit;
+    cursor: pointer; transition: all 0.15s;
+    text-align: left;
+  }
+  .btn-copy-month:hover {
+    border-color: var(--accent); background: var(--accent-soft);
+  }
+  .btn-copy-month .ic { width: 16px; height: 16px; }
+
   .delete-btn {
     background: transparent; border: none; color: var(--muted-2);
     cursor: pointer; padding: 4px 6px; border-radius: 6px;
@@ -789,6 +822,8 @@ const ICON_PATHS = {
   "car":           '<path d="M5 13h14l-1.8-5.4A2 2 0 0 0 15.3 6H8.7a2 2 0 0 0-1.9 1.6z"/><path d="M3 17h18v-4H3z"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/><line x1="5" y1="20" x2="5" y2="17"/><line x1="19" y1="20" x2="19" y2="17"/>',
   "tag":           '<path d="M20.59 13.41 13.42 20.59a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle class="ic-fill" cx="7" cy="7" r="1.2"/>',
   "chevron-down":  '<polyline points="6 9 12 15 18 9"/>',
+  "chevron-right": '<polyline points="9 18 15 12 9 6"/>',
+  "copy":          '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
   "list":          '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
   "bolt":          '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'
 };
@@ -1831,6 +1866,119 @@ function changeFixedPaidWith(m, cat, pw) {
   setMonthCategoryAmount("fixed", m, cat, cur.amount, pw);
   refreshTotals();
 }
+
+// ═══════════════════════════════════════════════════════════════
+// FIXED — COPY FROM ANOTHER MONTH
+//
+// Motivation: fixed expenses live as one transaction per (month,category),
+// so typing values in January does NOT auto-propagate to Feb–Dec (by
+// design — bills can change month to month). This helper lets the user
+// stamp another month's values into the current one in a single action,
+// then tweak whatever differs.
+//
+// Semantics: NON-destructive per category. If source has {Rent:1000,
+// Electricity:80} and target has {Gym:50}, the copy overwrites Rent and
+// Electricity on target but leaves Gym untouched. Source categories with
+// amount 0 are skipped (never zero out a target's manually-entered row).
+// ═══════════════════════════════════════════════════════════════
+function copyFixedFromMonth(sourceM, targetM) {
+  if (sourceM === targetM) return 0;
+  const src = monthFixedByCat(sourceM);
+  let copied = 0;
+  Object.keys(src).forEach(cat => {
+    const row = src[cat];
+    const amount = Number(row.amount) || 0;
+    if (amount <= 0) return;
+    setMonthCategoryAmount("fixed", targetM, cat, amount, row.paidWith || DATA.lastUsedPaidWith || defaultPaidWith());
+    copied++;
+  });
+  if (copied > 0) save();
+  return copied;
+}
+
+// Returns [{ m, total, count }] for every month (except `excludeM`) that
+// has at least one fixed transaction. Used to populate the picker.
+function monthsWithFixed(excludeM) {
+  const out = [];
+  for (let m = 0; m < 12; m++) {
+    if (m === excludeM) continue;
+    const fixedMap = monthFixedByCat(m);
+    let total = 0, count = 0;
+    Object.values(fixedMap).forEach(r => {
+      const amt = Number(r.amount) || 0;
+      if (amt > 0) { total += amt; count++; }
+    });
+    if (count > 0) out.push({ m, total, count });
+  }
+  return out;
+}
+
+async function openFixedCopyPicker(targetM) {
+  const candidates = monthsWithFixed(targetM);
+  if (candidates.length === 0) {
+    toast("No other month has fixed values yet", true);
+    return;
+  }
+
+  // Precompute what the target currently has so we can warn about overwrites.
+  const tgtFixed = monthFixedByCat(targetM);
+  const tgtHas = Object.values(tgtFixed).some(r => (Number(r.amount) || 0) > 0);
+
+  const rows = candidates.map(c => `
+    <button class="btn-copy-month" type="button"
+      onclick="window.__fixedCopyPick(${c.m})">
+      <div class="flex items-center gap-2" style="flex:1;min-width:0">
+        <span style="display:inline-flex;color:var(--accent)">${icon("calendar")}</span>
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+          <span style="font-weight:600;color:#fff">${MONTHS[c.m]}</span>
+          <span class="text-muted" style="font-size:11px">${c.count} categor${c.count === 1 ? "y" : "ies"}</span>
+        </div>
+      </div>
+      <span class="mono" style="color:var(--orange);font-weight:600">${fmt(c.total)}</span>
+      <span style="display:inline-flex;color:var(--text-dim)">${icon("chevron-right")}</span>
+    </button>`).join("");
+
+  document.getElementById("modal-content").innerHTML = `
+    <div class="modal-title">
+      <span>${icon("copy")} Copy fixed values to ${MONTHS[targetM]}</span>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close"><i data-icon="close"></i></button>
+    </div>
+    <p class="note" style="margin-bottom:12px">
+      Pick a month to copy from. Only categories with an amount are copied
+      — your existing ${MONTHS[targetM]} rows stay untouched unless the
+      source has the same category.
+    </p>
+    ${tgtHas ? `<div style="padding:10px 12px;border:1px solid rgba(245,158,11,0.35);background:rgba(245,158,11,0.08);border-radius:10px;font-size:12px;color:var(--text);margin-bottom:12px;display:flex;gap:8px;align-items:flex-start">
+      <span style="color:var(--orange);display:inline-flex;flex-shrink:0;margin-top:1px">${icon("alert-triangle")}</span>
+      <span><strong>${MONTHS[targetM]}</strong> already has fixed values. Matching categories will be <strong>replaced</strong> with the source amounts.</span>
+    </div>` : ""}
+    <div class="copy-month-list">${rows}</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeModal()">Cancel</button>
+    </div>
+  `;
+  document.getElementById("modal-overlay").classList.add("show");
+
+  window.__fixedCopyPick = async (sourceM) => {
+    delete window.__fixedCopyPick;
+    // Confirm overwrite if both months have data AND they share at least one
+    // non-zero category. Otherwise it's purely additive → just apply.
+    const srcMap = monthFixedByCat(sourceM);
+    const clash = Object.keys(srcMap).some(cat =>
+      (Number(srcMap[cat].amount) || 0) > 0 &&
+      (Number(tgtFixed[cat]?.amount) || 0) > 0 &&
+      Number(srcMap[cat].amount) !== Number(tgtFixed[cat].amount)
+    );
+    closeModal();
+    if (clash) {
+      const ok = await appConfirm(`Replace overlapping ${MONTHS[targetM]} values with ${MONTHS[sourceM]}'s amounts?`);
+      if (!ok) return;
+    }
+    const n = copyFixedFromMonth(sourceM, targetM);
+    refreshTotals();
+    if (n > 0) toast(`Copied ${n} ${n === 1 ? "value" : "values"} from ${MONTHS[sourceM]}`);
+  };
+}
 function changeIncomeReceivedTo(m, cat, pw) {
   const cur = monthIncomeByCat(m)[cat] || {};
   const accId = pw?.kind === "account" ? pw.id : (pw?.id || null);
@@ -2418,6 +2566,11 @@ function renderFixed() {
   const totAnnual = annualFixed.reduce((s, v) => s + v, 0);
   const avgMonthly = totAnnual / 12;
 
+  // Only offer the "Copy from…" action when at least one OTHER month has
+  // fixed values to copy from. Keeps the UI empty when the user hasn't
+  // entered anything yet anywhere (e.g. brand-new year).
+  const hasOtherSources = monthsWithFixed(m).length > 0;
+
   const fixedRows = yd().fixedCategories.map(f => {
     const row = fixedMap[f] || { amount: 0, paidWith: null };
     const pw = row.paidWith || DATA.lastUsedPaidWith || defaultPaidWith();
@@ -2462,8 +2615,9 @@ function renderFixed() {
   <div class="card">
     <div class="card-title">
       <div class="card-title-left">${icon("lock")}${MONTHS[m]} Fixed Expenses</div>
+      ${hasOtherSources ? `<button class="btn-inline" onclick="openFixedCopyPicker(${m})" title="Copy values from another month">${icon("copy")}Copy from…</button>` : ""}
     </div>
-    <p class="note">Set these once per month (rent, insurance, subscriptions). Pick how each one gets paid — account or credit-card balances update automatically.</p>
+    <p class="note">Set these each month (rent, insurance, subscriptions). Amounts don't auto-repeat — bills change — but <strong>Copy from…</strong> stamps another month's values here so you only tweak what's different.</p>
     ${fixedRows || `<div class="empty"><div class="empty-icon">${icon("lock", 32)}</div>No fixed categories yet</div>`}
     <button class="btn-add" onclick="addCategory('fixed')">${icon("plus")} Add Fixed Expense</button>
     <div class="total-row">
