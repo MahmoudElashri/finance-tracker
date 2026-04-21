@@ -211,6 +211,77 @@
   }
   .select-input:focus { border-color: var(--accent); }
 
+  /* ── CUSTOM SELECT (renders SVG icons inside options) ──────────────────────── */
+  .cs { position: relative; flex: 1; min-width: 0; }
+  .cs-btn {
+    width: 100%;
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px 8px 10px;
+    background: var(--input-bg); color: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    cursor: pointer; text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .cs-btn:hover { border-color: var(--border-strong); }
+  .cs.cs-open .cs-btn { border-color: var(--accent); background: var(--accent-soft); }
+  .cs-btn-icon { display: inline-flex; align-items: center; color: var(--text-dim); flex-shrink: 0; }
+  .cs.cs-open .cs-btn-icon, .cs-btn:hover .cs-btn-icon { color: var(--text); }
+  .cs-btn-label {
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .cs-btn-label.placeholder { color: var(--text-dim); font-weight: 500; }
+  .cs-chev { width: 14px; height: 14px; color: var(--text-dim); flex-shrink: 0; transition: transform 0.2s; }
+  .cs.cs-open .cs-chev { transform: rotate(180deg); color: var(--accent); }
+  .cs-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: var(--bg-1);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
+    z-index: 60;
+    max-height: 280px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 5px;
+    display: none;
+    animation: csFadeIn 0.14s ease-out;
+  }
+  .cs.cs-up .cs-menu { top: auto; bottom: calc(100% + 6px); }
+  .cs.cs-open .cs-menu { display: block; }
+  @keyframes csFadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+  .cs.cs-up.cs-open .cs-menu { animation-name: csFadeInUp; }
+  @keyframes csFadeInUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .cs-group {
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--muted);
+    padding: 9px 10px 4px;
+  }
+  .cs-opt {
+    width: 100%;
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px;
+    background: transparent; border: none;
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit; font-size: 12.5px; font-weight: 500;
+    cursor: pointer; text-align: left;
+    transition: background 0.12s, color 0.12s;
+  }
+  .cs-opt:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .cs-opt.cs-sel { background: var(--accent-soft); color: #fff; }
+  .cs-opt-icon { display: inline-flex; align-items: center; color: var(--text-dim); flex-shrink: 0; }
+  .cs-opt:hover .cs-opt-icon, .cs-opt.cs-sel .cs-opt-icon { color: var(--accent); }
+  .cs-opt-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cs-opt-check { width: 14px; height: 14px; color: var(--accent); flex-shrink: 0; opacity: 0; }
+  .cs-opt.cs-sel .cs-opt-check { opacity: 1; }
+
   /* ── PAID-WITH PILL ROW ──────────────────────── */
   .pw-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 4px; }
   .pw-row::-webkit-scrollbar { display: none; }
@@ -717,6 +788,7 @@ const ICON_PATHS = {
   "utensils":      '<path d="M3 2v7a3 3 0 0 0 3 3v10"/><path d="M9 2v10"/><path d="M6 2v5"/><path d="M17 2c-1.5 2-2 5-2 7h3v13"/>',
   "car":           '<path d="M5 13h14l-1.8-5.4A2 2 0 0 0 15.3 6H8.7a2 2 0 0 0-1.9 1.6z"/><path d="M3 17h18v-4H3z"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/><line x1="5" y1="20" x2="5" y2="17"/><line x1="19" y1="20" x2="19" y2="17"/>',
   "tag":           '<path d="M20.59 13.41 13.42 20.59a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle class="ic-fill" cx="7" cy="7" r="1.2"/>',
+  "chevron-down":  '<polyline points="6 9 12 15 18 9"/>',
   "list":          '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
   "bolt":          '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'
 };
@@ -736,6 +808,101 @@ function hydrateIcons(root) {
     el.outerHTML = icon(name, size);
   });
 }
+
+// ═══════════════════════════════════════════════════════════════
+// CUSTOM SELECT — a button + popover menu that can render SVG
+// icons next to each option (native <option>s cannot).
+// Usage:
+//   customSelectHTML({
+//     selectedIcon: "<svg>…</svg>" (or null for a default placeholder),
+//     selectedLabel: "Displayed name",
+//     placeholder: "Pick one…" (shown when selectedLabel empty),
+//     callbackName: "window-level function name called on select",
+//     parsePayload: true  → payload is "kind:id" parsed into {kind,id}
+//                  false → payload is the raw string value
+//     groups: [{ label, options: [{ value, icon, label, isSel }] }]
+//   })
+// _csToggle/_csSelect manage open state and dispatch.
+// ═══════════════════════════════════════════════════════════════
+let _csAutoId = 0;
+function customSelectHTML(opts) {
+  const {
+    selectedIcon = "",
+    selectedLabel = "",
+    placeholder = "Select…",
+    callbackName,
+    parsePayload = false,
+    groups = []
+  } = opts;
+  const id = "cs_" + (++_csAutoId);
+  const labelText = selectedLabel || placeholder;
+  const labelCls = selectedLabel ? "cs-btn-label" : "cs-btn-label placeholder";
+
+  const groupsHTML = groups.map(g => {
+    const header = g.label ? `<div class="cs-group">${escapeHTML(g.label)}</div>` : "";
+    const optsHTML = g.options.map(o => `
+      <button type="button" class="cs-opt ${o.isSel ? "cs-sel" : ""}"
+        data-val="${escapeHTML(String(o.value))}"
+        onclick="_csSelect('${id}','${callbackName}',this.dataset.val,${parsePayload ? "1" : "0"})">
+        <span class="cs-opt-icon">${o.icon || ""}</span>
+        <span class="cs-opt-label">${escapeHTML(o.label)}</span>
+        <span class="cs-opt-check">${icon("check")}</span>
+      </button>`).join("");
+    return header + optsHTML;
+  }).join("");
+
+  return `<div class="cs" id="${id}">
+    <button type="button" class="cs-btn" onclick="_csToggle('${id}', event)" aria-haspopup="listbox">
+      <span class="cs-btn-icon">${selectedIcon}</span>
+      <span class="${labelCls}">${escapeHTML(labelText)}</span>
+      <svg class="ic cs-chev" viewBox="0 0 24 24" aria-hidden="true">${ICON_PATHS["chevron-down"]}</svg>
+    </button>
+    <div class="cs-menu" role="listbox">${groupsHTML}</div>
+  </div>`;
+}
+
+function _csToggle(id, ev) {
+  if (ev) ev.stopPropagation();
+  const el = document.getElementById(id);
+  if (!el) return;
+  const wasOpen = el.classList.contains("cs-open");
+  document.querySelectorAll(".cs.cs-open").forEach(n => n.classList.remove("cs-open", "cs-up"));
+  if (!wasOpen) {
+    // Flip upward when there isn't enough room below.
+    const rect = el.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const menuMax = 280;
+    if (spaceBelow < 180 && rect.top > menuMax) el.classList.add("cs-up");
+    el.classList.add("cs-open");
+    // Scroll the currently-selected option into view in the menu.
+    requestAnimationFrame(() => {
+      const sel = el.querySelector(".cs-opt.cs-sel");
+      if (sel) sel.scrollIntoView({ block: "nearest" });
+    });
+  }
+}
+
+function _csSelect(id, callbackName, rawVal, parseFlag) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove("cs-open", "cs-up");
+  const parse = String(parseFlag) === "1";
+  const payload = parse
+    ? (rawVal ? { kind: rawVal.split(":")[0], id: rawVal.split(":")[1] } : null)
+    : rawVal;
+  const fn = window[callbackName];
+  if (typeof fn === "function") fn(payload);
+}
+
+// Close any open custom select when the user clicks / taps outside it or presses Escape.
+document.addEventListener("click", (e) => {
+  if (e.target.closest && e.target.closest(".cs")) return;
+  document.querySelectorAll(".cs.cs-open").forEach(n => n.classList.remove("cs-open", "cs-up"));
+}, true);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    document.querySelectorAll(".cs.cs-open").forEach(n => n.classList.remove("cs-open", "cs-up"));
+  }
+});
 const DAYS_IN_MONTH = (year, month) => new Date(year, month + 1, 0).getDate();
 const CAT_COLORS = {
   "Food & Grocery": "#e67e22",
@@ -994,8 +1161,25 @@ async function migrateV3ToV4(v3) {
 
 function askDefaultAccountModal(accounts, defaultId) {
   return new Promise(resolve => {
-    const opts = accounts.map(a =>
-      `<option value="${a.id}" ${a.id === defaultId ? "selected" : ""}>${escapeHTML(a.name)}</option>`).join("");
+    let picked = defaultId || (accounts[0] && accounts[0].id) || "";
+    window.__migPick = (v) => { picked = v; };
+    const pickedAcc = accounts.find(a => a.id === picked) || accounts[0];
+    const dropdown = customSelectHTML({
+      selectedIcon: pickedAcc ? icon(accountIconName(pickedAcc)) : icon("wallet"),
+      selectedLabel: pickedAcc ? pickedAcc.name : "",
+      placeholder: "Select an account",
+      callbackName: "__migPick",
+      parsePayload: false,
+      groups: [{
+        label: "Accounts",
+        options: accounts.map(a => ({
+          value: a.id,
+          icon: icon(accountIconName(a)),
+          label: a.name,
+          isSel: a.id === picked
+        }))
+      }]
+    });
     document.getElementById("modal-content").innerHTML = `
       <div class="modal-title">
         <span><i data-icon="refresh"></i> One-Time Migration</span>
@@ -1007,19 +1191,20 @@ function askDefaultAccountModal(accounts, defaultId) {
         To backfill your history, we need to assume where past spending, income, and debt payments came from. You can change any of these later.
       </p>
       <label class="debt-field-label" style="display:block;margin-bottom:6px">Default account for past entries</label>
-      <select class="select-input" id="mig-acct" style="width:100%">${opts}</select>
+      ${dropdown}
       <p class="note" style="margin-top:12px">
         Tip: your existing account and credit-card balances stay untouched — we only tag historical transactions.
       </p>
       <div class="modal-actions">
-        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="window.__migResolve(document.getElementById('mig-acct').value)">Continue</button>
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="window.__migResolve()">Continue</button>
       </div>
     `;
     document.getElementById("modal-overlay").classList.add("show");
-    window.__migResolve = (val) => {
+    window.__migResolve = () => {
       document.getElementById("modal-overlay").classList.remove("show");
       delete window.__migResolve;
-      resolve(val);
+      delete window.__migPick;
+      resolve(picked);
     };
   });
 }
@@ -1493,23 +1678,52 @@ function paidWithSelectHTML(selected, callbackName, { accountsOnly = false, allo
   const accounts = DATA.accounts || [];
   const debts = (DATA.debts || []).filter(d => d.isPaymentMethod !== false);
   const isSel = (kind, id) => selected && selected.kind === kind && selected.id === id;
-  const opts = [];
-  if (allowNone) opts.push(`<option value="">— none —</option>`);
+  const groups = [];
+  if (allowNone) {
+    groups.push({ label: "", options: [
+      { value: "", icon: icon("close"), label: "— none —", isSel: !selected }
+    ]});
+  }
   if (accounts.length) {
-    opts.push(`<optgroup label="Accounts">`);
-    accounts.forEach(a => {
-      opts.push(`<option value="account:${a.id}" ${isSel("account", a.id) ? "selected" : ""}>${escapeHTML(a.name)}</option>`);
+    groups.push({
+      label: "Accounts",
+      options: accounts.map(a => ({
+        value: `account:${a.id}`,
+        icon: icon(accountIconName(a)),
+        label: a.name,
+        isSel: isSel("account", a.id)
+      }))
     });
-    opts.push(`</optgroup>`);
   }
   if (!accountsOnly && debts.length) {
-    opts.push(`<optgroup label="Credit Cards">`);
-    debts.forEach(d => {
-      opts.push(`<option value="debt:${d.id}" ${isSel("debt", d.id) ? "selected" : ""}>${escapeHTML(d.name)}</option>`);
+    groups.push({
+      label: "Credit Cards",
+      options: debts.map(d => ({
+        value: `debt:${d.id}`,
+        icon: icon("credit-card"),
+        label: d.name,
+        isSel: isSel("debt", d.id)
+      }))
     });
-    opts.push(`</optgroup>`);
   }
-  return `<select class="select-input" onchange="${callbackName}(this.value ? {kind: this.value.split(':')[0], id: this.value.split(':')[1]} : null)">${opts.join("")}</select>`;
+  let selectedIcon = icon("wallet");
+  let selectedLabel = "";
+  if (selected) {
+    if (selected.kind === "debt") {
+      selectedIcon = icon("credit-card");
+    } else {
+      const acct = getAccount(selected.id);
+      if (acct) selectedIcon = icon(accountIconName(acct));
+    }
+    selectedLabel = paidWithLabel(selected);
+  }
+  return customSelectHTML({
+    selectedIcon, selectedLabel,
+    placeholder: allowNone ? "— none —" : "Select…",
+    callbackName,
+    parsePayload: true,
+    groups
+  });
 }
 
 // Chip-style picker for the Quick-Add modal
@@ -2058,21 +2272,28 @@ function renderDaily() {
     const draft = addDraft || { amount: "", category: vars[0], paidWith: DATA.lastUsedPaidWith || defaultPaidWith(), note: "" };
     addDraft = draft;
 
-    const catOpts = vars.map(c => `<option value="${escapeHTML(c)}" ${c === draft.category ? "selected" : ""}>${escapeHTML(c)}</option>`).join("");
-    const pwVal = draft.paidWith ? `${draft.paidWith.kind}:${draft.paidWith.id}` : "";
-    const pwOpts = (() => {
-      const opts = [];
-      opts.push(`<optgroup label="Accounts">`);
-      DATA.accounts.forEach(a => opts.push(`<option value="account:${a.id}" ${pwVal === `account:${a.id}` ? "selected" : ""}>${escapeHTML(a.name)}</option>`));
-      opts.push(`</optgroup>`);
-      const cards = DATA.debts.filter(d => d.isPaymentMethod);
-      if (cards.length) {
-        opts.push(`<optgroup label="Credit Cards">`);
-        cards.forEach(d => opts.push(`<option value="debt:${d.id}" ${pwVal === `debt:${d.id}` ? "selected" : ""}>${escapeHTML(d.name)}</option>`));
-        opts.push(`</optgroup>`);
-      }
-      return opts.join("");
-    })();
+    // Named window callbacks so the custom dropdowns can dispatch selections.
+    window.__dailyCat = (v) => { addDraft.category = v; };
+    window.__dailyPaidWith = (pw) => { addDraft.paidWith = pw; };
+
+    const catDropdown = customSelectHTML({
+      selectedIcon: `<span class="tx-cat-dot" style="background:${colorFor(draft.category)};width:10px;height:10px;display:inline-block;border-radius:50%"></span>`,
+      selectedLabel: draft.category || "",
+      placeholder: "Pick category",
+      callbackName: "__dailyCat",
+      parsePayload: false,
+      groups: [{
+        label: "Categories",
+        options: vars.map(c => ({
+          value: c,
+          icon: `<span class="tx-cat-dot" style="background:${colorFor(c)};width:10px;height:10px;display:inline-block;border-radius:50%"></span>`,
+          label: c,
+          isSel: c === draft.category
+        }))
+      }]
+    });
+
+    const pwDropdown = paidWithSelectHTML(draft.paidWith || null, "__dailyPaidWith");
 
     editor = `<div class="day-editor fade-in">
       <div class="day-editor-title">
@@ -2091,12 +2312,12 @@ function renderDaily() {
           </div>
           <div>
             <label class="debt-field-label">Category</label>
-            <select class="select-input" style="width:100%" onchange="addDraft.category=this.value">${catOpts}</select>
+            ${catDropdown}
           </div>
         </div>
         <div style="margin-top:8px">
           <label class="debt-field-label">Paid with</label>
-          <select class="select-input" style="width:100%" onchange="addDraft.paidWith=this.value?{kind:this.value.split(':')[0],id:this.value.split(':')[1]}:null">${pwOpts}</select>
+          ${pwDropdown}
         </div>
         <div style="margin-top:8px">
           <label class="debt-field-label">Note (optional)</label>
@@ -2536,9 +2757,25 @@ function renderWealth() {
   const totalAssets = a.totalAssets;
 
   const accountCards = DATA.accounts.map(acc => {
-    const typeOpts = ACCOUNT_TYPES.map(t =>
-      `<option value="${t.id}" ${t.id === (acc.type || "other") ? "selected" : ""}>${t.label}</option>`
-    ).join("");
+    const currType = accountType(acc);
+    const cb = `__accType_${acc.id}`;
+    window[cb] = (v) => setAccountType(acc.id, v);
+    const typeDropdown = customSelectHTML({
+      selectedIcon: icon(currType.iconName),
+      selectedLabel: currType.label,
+      placeholder: "Pick type",
+      callbackName: cb,
+      parsePayload: false,
+      groups: [{
+        label: "Account type",
+        options: ACCOUNT_TYPES.map(t => ({
+          value: t.id,
+          icon: icon(t.iconName),
+          label: t.label,
+          isSel: t.id === (acc.type || "other")
+        }))
+      }]
+    });
     const neg = (Number(acc.balance) || 0) < 0;
     return `<div style="padding:11px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px">
       <div class="flex justify-between items-center gap-2">
@@ -2558,8 +2795,7 @@ function renderWealth() {
       </div>
       <div class="flex items-center gap-2" style="gap:6px">
         <span class="text-muted" style="font-size:10px">Type:</span>
-        <select class="select-input" style="flex:1;font-size:12px;padding:6px 26px 6px 10px"
-          onchange="setAccountType('${acc.id}',this.value)">${typeOpts}</select>
+        ${typeDropdown}
       </div>
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:var(--text-dim)">
         <input type="checkbox" ${acc.autoSync ? "checked" : ""} onchange="toggleAccountAutoSync('${acc.id}')" style="accent-color:var(--accent)"/>
