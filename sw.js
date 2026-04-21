@@ -1,6 +1,6 @@
 // Finance Tracker service worker
 // Bump CACHE_VERSION whenever shipping an updated build — old caches are pruned on activate.
-const CACHE_VERSION = "ft-v4.0.5";
+const CACHE_VERSION = "ft-v4.0.6";
 const ASSETS = [
   "./",
   "./index.html",

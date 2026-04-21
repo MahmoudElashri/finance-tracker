@@ -2899,6 +2899,11 @@ function _isFormField(el) {
   const t = (el.type || "text").toLowerCase();
   return !["checkbox", "radio", "button", "submit", "reset", "file", "range", "color"].includes(t);
 }
+function _revealFocused() {
+  const el = document.activeElement;
+  if (!_isFormField(el)) return;
+  try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch { try { el.scrollIntoView(); } catch {} }
+}
 function _updateKbLock() {
   const vv = window.visualViewport;
   const h = vv ? vv.height : window.innerHeight;
@@ -2910,8 +2915,10 @@ function _updateKbLock() {
     document.documentElement.style.setProperty("--visible-h", h + "px");
     body.classList.add("kb-lock");
     if (app) app.scrollTop = _kbSavedScroll;
+    requestAnimationFrame(_revealFocused);
   } else if (kbOpen && body.classList.contains("kb-lock")) {
     document.documentElement.style.setProperty("--visible-h", h + "px");
+    requestAnimationFrame(_revealFocused);
   } else if (!kbOpen && body.classList.contains("kb-lock")) {
     const restore = app ? app.scrollTop : _kbSavedScroll;
     body.classList.remove("kb-lock");
@@ -2919,7 +2926,12 @@ function _updateKbLock() {
     requestAnimationFrame(() => window.scrollTo(0, restore));
   }
 }
-document.addEventListener("focusin", () => setTimeout(_updateKbLock, 50));
+document.addEventListener("focusin", (e) => {
+  setTimeout(() => {
+    _updateKbLock();
+    if (_isFormField(e.target)) setTimeout(_revealFocused, 200);
+  }, 50);
+});
 document.addEventListener("focusout", () => setTimeout(_updateKbLock, 100));
 if (window.visualViewport) {
   window.visualViewport.addEventListener("resize", _updateKbLock);
