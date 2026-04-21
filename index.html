@@ -65,7 +65,11 @@
   ::-webkit-scrollbar { width: 0; display: none; }
 
   /* ── LAYOUT ──────────────────────── */
-  .app { max-width: 500px; margin: 0 auto; padding: 20px 14px 100px; min-height: 100vh; }
+  .app {
+    max-width: 500px; margin: 0 auto;
+    padding: calc(20px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 100px calc(14px + env(safe-area-inset-left));
+    min-height: 100vh;
+  }
   .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
   .page-header h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1.15; }
   .page-header h1 .accent { color: var(--accent); }
@@ -490,7 +494,7 @@
     .nav-btn .icon { font-size: 22px; }
     .nav-btn { padding: 10px 0 8px; }
     .page-header h1 { font-size: 20px; }
-    .app { padding: 16px 10px 96px; }
+    .app { padding: calc(16px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) 96px calc(10px + env(safe-area-inset-left)); }
     .kpi-grid { gap: 6px; }
     .kpi { padding: 12px 10px; }
     .kpi-value { font-size: 18px; }
