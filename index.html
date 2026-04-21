@@ -1,0 +1,2787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Finance"/>
+<meta name="theme-color" content="#0a0a1a"/>
+<title>Finance Tracker</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Dark navy palette */
+    --bg-0: #0a0a1a;
+    --bg-1: #141428;
+    --bg-2: #1a1a2e;
+    --bg-3: #16213e;
+    --card: rgba(255,255,255,0.035);
+    --card-hover: rgba(255,255,255,0.05);
+    --border: rgba(255,255,255,0.07);
+    --border-strong: rgba(255,255,255,0.12);
+    --text: #e8e8f0;
+    --text-dim: #a0a0b8;
+    --muted: #6b6b8a;
+    --muted-2: #4a4a6a;
+    --accent: #6c5ce7;
+    --accent-soft: rgba(108,92,231,0.15);
+    --green: #27ae60;
+    --green-soft: rgba(39,174,96,0.12);
+    --red: #e74c3c;
+    --red-soft: rgba(231,76,60,0.12);
+    --orange: #e67e22;
+    --orange-soft: rgba(230,126,34,0.12);
+    --yellow: #f39c12;
+    --yellow-soft: rgba(243,156,18,0.15);
+    --teal: #1abc9c;
+    --teal-soft: rgba(26,188,156,0.12);
+    --purple: #9b59b6;
+    --purple-soft: rgba(155,89,182,0.12);
+    --blue: #3498db;
+    --input-bg: #1e1e3a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html,body { overscroll-behavior: none; }
+  body {
+    background: linear-gradient(160deg, #0a0a1a 0%, #141428 50%, #0d1b2a 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    min-height: 100vh;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 500; letter-spacing: -0.3px; }
+  ::-webkit-scrollbar { width: 0; display: none; }
+
+  /* ── LAYOUT ──────────────────────── */
+  .app { max-width: 500px; margin: 0 auto; padding: 20px 14px 100px; min-height: 100vh; }
+  .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
+  .page-header h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1.15; }
+  .page-header h1 .accent { color: var(--accent); }
+  .page-header .subtitle { font-size: 11px; color: var(--muted); margin-top: 4px; font-weight: 400; }
+
+  .header-actions { display: flex; gap: 8px; }
+  .icon-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.15s; }
+  .icon-btn:hover, .icon-btn:active { background: var(--card-hover); color: #fff; }
+
+  /* ── CARDS ──────────────────────── */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+  .card-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .card-title-left { display: flex; align-items: center; gap: 6px; }
+  .note { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+
+  /* ── KPI GRID ──────────────────────── */
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before { content: ""; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--accent-color, var(--accent)); }
+  .kpi-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; margin-bottom: 4px; }
+  .kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+  .kpi-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  /* ── PILL TABS ──────────────────────── */
+  .tab-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 14px; padding: 4px; background: var(--card); border-radius: 10px; border: 1px solid var(--border); }
+  .tab-row-scroll { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 4px; background: var(--card); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 14px; }
+  .tab {
+    padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer;
+    font-size: 11px; font-weight: 600; font-family: inherit;
+    background: transparent; color: var(--muted);
+    transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .tab.active { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(108,92,231,0.3); }
+  .tab-row-scroll .tab { flex: 0 0 auto; }
+
+  /* ── FORM ROWS ──────────────────────── */
+  .form-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 0; border-bottom: 1px solid var(--border);
+  }
+  .form-row:last-child { border-bottom: none; }
+  .form-label { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .form-label-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .editable-label {
+    background: transparent; border: none; color: var(--text);
+    font-family: inherit; font-size: 16px; outline: none;
+    padding: 2px 4px; border-radius: 4px; min-width: 0; flex: 1;
+  }
+  .editable-label:focus { background: rgba(108,92,231,0.1); }
+
+  /* ── INPUTS ──────────────────────── */
+  .amt-input {
+    width: 108px; padding: 9px 12px;
+    border-radius: 9px; border: 1.5px solid var(--border);
+    background: var(--input-bg); color: #fff;
+    font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 500;
+    outline: none; text-align: right;
+    transition: border-color 0.15s, background 0.15s;
+    -moz-appearance: textfield;
+  }
+  .amt-input::-webkit-outer-spin-button,
+  .amt-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .amt-input:focus { border-color: var(--accent); background: #242247; }
+  .amt-input::placeholder { color: var(--muted-2); }
+
+  .text-input {
+    width: 100%; padding: 10px 12px;
+    border-radius: 9px; border: 1.5px solid var(--border);
+    background: var(--input-bg); color: #fff;
+    font-family: inherit; font-size: 16px; outline: none;
+    transition: border-color 0.15s;
+  }
+  .text-input:focus { border-color: var(--accent); }
+
+  .select-input {
+    padding: 9px 10px; border-radius: 9px;
+    border: 1.5px solid var(--border);
+    background: var(--input-bg); color: #fff;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    outline: none; cursor: pointer;
+    appearance: none; -webkit-appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-dim) 50%), linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
+    background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 26px;
+  }
+  .select-input:focus { border-color: var(--accent); }
+
+  /* ── PAID-WITH PILL ROW ──────────────────────── */
+  .pw-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 4px; }
+  .pw-row::-webkit-scrollbar { display: none; }
+  .pw-chip {
+    flex: 0 0 auto; padding: 7px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; font-family: inherit;
+    background: var(--card); color: var(--text-dim);
+    border: 1.5px solid var(--border); cursor: pointer;
+    white-space: nowrap; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pw-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .pw-chip.debt.active { background: var(--red); border-color: var(--red); }
+  .pw-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.9; }
+
+  /* ── TRANSACTION LIST ──────────────────────── */
+  .tx-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .tx-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 10px; border-radius: 10px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--border);
+  }
+  .tx-row .tx-cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .tx-row .tx-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .tx-row .tx-cat-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .tx-row .tx-meta { font-size: 10px; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .tx-row .tx-meta-tag { padding: 1px 6px; border-radius: 6px; background: rgba(255,255,255,0.05); }
+  .tx-row .tx-meta-tag.debt { color: var(--red); background: var(--red-soft); }
+  .tx-row .tx-meta-tag.account { color: var(--blue); background: rgba(52,152,219,0.12); }
+  .tx-row .tx-amt { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--text); }
+  .tx-row .delete-btn { margin-left: 4px; }
+
+  /* ── BUTTONS ──────────────────────── */
+  .btn {
+    padding: 10px 16px; border-radius: 10px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover, .btn-primary:active { background: #5f4fd8; }
+  .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--card-hover); color: #fff; }
+  .btn-danger { background: var(--red-soft); color: var(--red); border: 1px solid rgba(231,76,60,0.3); }
+  .btn-add {
+    width: 100%; padding: 11px; border-radius: 10px;
+    border: 1.5px dashed var(--border-strong);
+    background: transparent; color: var(--text-dim);
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer; margin-top: 10px; transition: all 0.15s;
+  }
+  .btn-add:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+  .delete-btn {
+    background: transparent; border: none; color: var(--muted-2);
+    cursor: pointer; padding: 4px 6px; border-radius: 6px;
+    font-size: 13px; transition: all 0.15s;
+  }
+  .delete-btn:hover { color: var(--red); background: var(--red-soft); }
+
+  /* ── TOTAL ROW ──────────────────────── */
+  .total-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0 4px; margin-top: 6px;
+    border-top: 1.5px solid var(--border-strong);
+  }
+  .total-label { font-size: 13px; font-weight: 700; }
+  .total-val { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+
+  /* ── DAY GRID ──────────────────────── */
+  .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 14px; }
+  .day-btn {
+    padding: 9px 2px; border-radius: 9px;
+    border: 1.5px solid var(--border);
+    cursor: pointer; background: var(--card);
+    color: var(--muted);
+    font-size: 12px; font-family: 'JetBrains Mono', monospace;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    transition: all 0.15s; font-weight: 500;
+  }
+  .day-btn.has-data {
+    border-color: rgba(108,92,231,0.35);
+    color: #b0a6f5; background: var(--accent-soft);
+  }
+  .day-btn.active {
+    border-color: var(--accent);
+    background: rgba(108,92,231,0.25);
+    color: #fff; font-weight: 700;
+    box-shadow: 0 2px 10px rgba(108,92,231,0.2);
+  }
+  .day-btn.today {
+    border-color: var(--teal);
+  }
+  .day-amt { font-size: 8px; color: var(--accent); font-weight: 600; }
+
+  /* ── DAY EDITOR ──────────────────────── */
+  .day-editor {
+    background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(108,92,231,0.03));
+    border: 1px solid rgba(108,92,231,0.2);
+    border-radius: 12px; padding: 16px; margin-bottom: 12px;
+  }
+  .day-editor-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cat-item { display: flex; flex-direction: column; gap: 4px; }
+  .cat-item label {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .cat-item .amt-input { width: 100%; }
+
+  /* ── PROGRESS BARS ──────────────────────── */
+  .progress-bar {
+    height: 7px; background: rgba(255,255,255,0.06);
+    border-radius: 4px; overflow: hidden; margin-top: 6px;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .progress-fill.green { background: linear-gradient(90deg, var(--green), #2ecc71); }
+  .progress-fill.yellow { background: linear-gradient(90deg, var(--yellow), #f1c40f); }
+  .progress-fill.red { background: linear-gradient(90deg, var(--red), #c0392b); }
+  .progress-fill.accent { background: linear-gradient(90deg, var(--accent), #8e7cef); }
+  .progress-fill.teal { background: linear-gradient(90deg, var(--teal), #16a085); }
+
+  /* ── BUDGET CARDS ──────────────────────── */
+  .budget-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px; margin-bottom: 8px;
+  }
+  .budget-card.warning { border-color: rgba(243,156,18,0.4); background: var(--yellow-soft); }
+  .budget-card.over { border-color: rgba(231,76,60,0.4); background: var(--red-soft); }
+  .budget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .budget-name { font-size: 12px; font-weight: 600; }
+  .budget-nums { font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+
+  /* ── DEBT CARDS ──────────────────────── */
+  .debt-card {
+    background: var(--purple-soft);
+    border: 1px solid rgba(155,89,182,0.2);
+    border-radius: 12px; padding: 14px; margin-bottom: 10px;
+  }
+  .debt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
+  .debt-name-input {
+    background: transparent; border: none; color: #c9b8f5;
+    font-size: 14px; font-weight: 700; font-family: inherit;
+    outline: none; width: 100%; padding: 2px 4px; border-radius: 4px;
+  }
+  .debt-name-input:focus { background: rgba(155,89,182,0.15); }
+  .debt-stats { display: flex; justify-content: space-between; font-size: 11px; margin-top: 10px; }
+  .debt-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .debt-grid .amt-input { width: 100%; }
+  .debt-field-label { font-size: 9px; color: var(--muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ── GOAL CARDS ──────────────────────── */
+  .goal-card {
+    background: var(--teal-soft);
+    border-left: 3px solid var(--teal);
+    border-radius: 0 12px 12px 0; padding: 14px; margin-bottom: 10px;
+  }
+  .goal-card.debt { background: var(--red-soft); border-left-color: var(--red); }
+  .goal-name-input {
+    background: transparent; border: none; color: #fff;
+    font-size: 14px; font-weight: 700; font-family: inherit;
+    outline: none; width: 100%; margin-bottom: 8px;
+  }
+
+  /* ── CHARTS ──────────────────────── */
+  .bar-chart {
+    display: flex; align-items: flex-end; gap: 4px;
+    height: 120px; padding: 0 2px; margin-top: 4px;
+  }
+  .bar-group { flex: 1; display: flex; gap: 1px; align-items: flex-end; height: 100%; }
+  .bar { flex: 1; border-radius: 3px 3px 0 0; min-height: 2px; transition: height 0.4s cubic-bezier(0.4,0,0.2,1); }
+  .bar-labels { display: flex; gap: 4px; margin-top: 6px; padding: 0 2px; }
+  .bar-label {
+    flex: 1; text-align: center; font-size: 9px;
+    color: var(--muted); font-family: 'JetBrains Mono', monospace;
+  }
+  .chart-legend { display: flex; gap: 12px; margin-bottom: 8px; font-size: 10px; }
+  .chart-legend span { display: flex; align-items: center; gap: 4px; color: var(--text-dim); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  .cat-breakdown { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .cat-breakdown-name { width: 82px; font-size: 11px; color: var(--text-dim); text-align: right; flex-shrink: 0; }
+  .cat-breakdown-bar { flex: 1; height: 14px; background: rgba(255,255,255,0.04); border-radius: 3px; overflow: hidden; }
+  .cat-breakdown-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+  .cat-breakdown-val { width: 58px; font-size: 10px; color: var(--text); text-align: right; font-family: 'JetBrains Mono', monospace; }
+
+  /* ── INSIGHT CARDS ──────────────────────── */
+  .insight {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px; margin-bottom: 10px;
+    border-left: 3px solid var(--accent);
+  }
+  .insight.positive { border-left-color: var(--green); background: var(--green-soft); }
+  .insight.warning { border-left-color: var(--yellow); background: var(--yellow-soft); }
+  .insight.critical { border-left-color: var(--red); background: var(--red-soft); }
+  .insight-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .insight-body { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+
+  /* ── FLOATING ACTION BUTTON (FAB) ──────────────────────── */
+  .fab {
+    position: fixed;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    right: 16px;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none; cursor: pointer;
+    font-size: 24px; font-weight: 300;
+    box-shadow: 0 6px 20px rgba(108,92,231,0.5), 0 2px 8px rgba(0,0,0,0.3);
+    z-index: 90;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .fab:hover { transform: scale(1.05); }
+  .fab:active { transform: scale(0.95); }
+
+  /* ── MODAL ──────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; padding: 16px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--bg-1);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 440px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: scale(0.95);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.show .modal { transform: scale(1); }
+  .modal-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .modal-close { background: transparent; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 4px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+  /* ── BOTTOM NAV ──────────────────────── */
+  .nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(10,10,26,0.92);
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: center;
+    backdrop-filter: blur(24px);
+    z-index: 100;
+    padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+  }
+  .nav-inner { display: flex; max-width: 500px; width: 100%; }
+  .nav-btn {
+    flex: 1; border: none; background: transparent; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 8px 0 4px; transition: all 0.15s;
+    color: var(--muted);
+  }
+  .nav-btn .icon { font-size: 18px; transition: transform 0.15s; }
+  .nav-btn .lbl {
+    font-size: 9px; font-family: 'DM Sans', sans-serif;
+    font-weight: 600; letter-spacing: 0.2px;
+  }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn.active .icon { transform: translateY(-1px); }
+
+  /* ── TOAST ──────────────────────── */
+  .toast {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-80px);
+    background: var(--green); color: #fff;
+    padding: 10px 18px; border-radius: 24px;
+    font-size: 12px; font-weight: 600;
+    z-index: 300; opacity: 0;
+    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--red); }
+
+  /* ── BADGES ──────────────────────── */
+  .badge {
+    display: inline-block; padding: 3px 8px; border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .badge.accent { background: var(--accent-soft); color: var(--accent); }
+  .badge.green { background: var(--green-soft); color: var(--green); }
+  .badge.red { background: var(--red-soft); color: var(--red); }
+  .badge.yellow { background: var(--yellow-soft); color: var(--yellow); }
+
+  /* ── UTILITIES ──────────────────────── */
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .gap-2 { gap: 8px; }
+  .gap-3 { gap: 12px; }
+  .justify-between { justify-content: space-between; }
+  .items-center { align-items: center; }
+  .text-center { text-align: center; }
+  .mt-2 { margin-top: 8px; }
+  .mt-3 { margin-top: 12px; }
+  .mb-2 { margin-bottom: 8px; }
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+  .text-dim { color: var(--text-dim); }
+  .text-muted { color: var(--muted); }
+
+  /* ── ANIMATIONS ──────────────────────── */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.25s ease-out; }
+
+  /* ── EMPTY STATE ──────────────────────── */
+  .empty { text-align: center; padding: 32px 16px; color: var(--muted); font-size: 12px; }
+  .empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.6; }
+
+  /* ── SMALL SCREEN TWEAKS ──────────────────────── */
+  @media (max-width: 380px) {
+    .nav-btn .lbl { display: none; }
+    .nav-btn .icon { font-size: 22px; }
+    .nav-btn { padding: 10px 0 8px; }
+    .page-header h1 { font-size: 20px; }
+    .app { padding: 16px 10px 96px; }
+    .kpi-grid { gap: 6px; }
+    .kpi { padding: 12px 10px; }
+    .kpi-value { font-size: 18px; }
+  }
+
+  /* ── BALANCE STRIP ──────────────────────── */
+  .balance-strip {
+    display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+    padding: 2px 0; margin-bottom: 12px;
+  }
+  .balance-strip::-webkit-scrollbar { display: none; }
+  .balance-chip {
+    flex: 0 0 auto; padding: 9px 12px; border-radius: 10px;
+    background: var(--card); border: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 120px;
+  }
+  .balance-chip .b-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+  .balance-chip .b-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; }
+  .balance-chip.debt { border-color: rgba(231,76,60,0.25); background: var(--red-soft); }
+  .balance-chip.debt .b-val { color: var(--red); }
+  .balance-chip.account .b-val { color: var(--teal); }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="page-header">
+    <div>
+      <h1>Finance <span class="accent">Tracker</span></h1>
+      <p class="subtitle" id="subtitle">Auto-saved in your browser</p>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
+    </div>
+  </div>
+  <div id="view-content"></div>
+</div>
+
+<button class="fab" onclick="openQuickAdd()" title="Quick add expense">+</button>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn" data-view="dash" onclick="setView('dash')">
+      <span class="icon">📊</span><span class="lbl">Home</span>
+    </button>
+    <button class="nav-btn" data-view="daily" onclick="setView('daily')">
+      <span class="icon">📅</span><span class="lbl">Daily</span>
+    </button>
+    <button class="nav-btn" data-view="budget" onclick="setView('budget')">
+      <span class="icon">🎯</span><span class="lbl">Budget</span>
+    </button>
+    <button class="nav-btn" data-view="income" onclick="setView('income')">
+      <span class="icon">💵</span><span class="lbl">Income</span>
+    </button>
+    <button class="nav-btn" data-view="debt" onclick="setView('debt')">
+      <span class="icon">💳</span><span class="lbl">Debt</span>
+    </button>
+    <button class="nav-btn" data-view="wealth" onclick="setView('wealth')">
+      <span class="icon">💎</span><span class="lbl">Wealth</span>
+    </button>
+    <button class="nav-btn" data-view="insights" onclick="setView('insights')">
+      <span class="icon">🧠</span><span class="lbl">Insights</span>
+    </button>
+  </div>
+</nav>
+
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MONTHS_S = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAYS_IN_MONTH = (year, month) => new Date(year, month + 1, 0).getDate();
+const CAT_COLORS = {
+  "Food & Grocery": "#e67e22",
+  "Gas / Fuel": "#3498db",
+  "Restaurants": "#e74c3c",
+  "Transportation": "#9b59b6",
+  "Personal Care": "#1abc9c",
+  "Charity": "#27ae60",
+  "Fun": "#f1c40f",
+  "Other": "#7f8c8d"
+};
+const DEFAULT_COLOR = "#7c6af7";
+const colorFor = (name) => CAT_COLORS[name] || DEFAULT_COLOR;
+
+const TODAY = new Date();
+const CURRENT_YEAR = TODAY.getFullYear();
+const STORAGE_KEY = "ftv4";
+const LEGACY_KEY = "ftv3";
+
+const uid = (pfx) => pfx + "_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const toISO = (y, m, d) => `${y}-${String(m+1).padStart(2,"0")}-${String(d+1).padStart(2,"0")}`;
+const parseISO = (s) => { const [y,m,d] = s.split("-").map(Number); return { y, m: m-1, d: d-1 }; };
+
+// ═══════════════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════════════
+function defaultYearData(year) {
+  const yd = {
+    variableCategories: ["Food & Grocery", "Gas / Fuel", "Restaurants", "Transportation", "Personal Care", "Charity", "Fun", "Other"],
+    fixedCategories: ["Rent", "Insurance", "Gym Membership", "Phone Bill", "Electricity", "Subscriptions"],
+    incomeCategories: ["Allowance / Family", "Salary / Internship", "Other Income"],
+    budgets: {},
+    months: {}
+  };
+  for (let m = 0; m < 12; m++) {
+    yd.months[m] = { transactions: [], savings: { target: 0, actual: 0 } };
+  }
+  yd.variableCategories.forEach(c => yd.budgets[c] = 0);
+  return yd;
+}
+
+function defaultData() {
+  return {
+    schemaVersion: 4,
+    currentYear: CURRENT_YEAR,
+    years: { [CURRENT_YEAR]: defaultYearData(CURRENT_YEAR) },
+    debts: [
+      { id: "d1", name: "Credit Card 1", balance: 0, minPay: 0, interestRate: 0, isPaymentMethod: true },
+      { id: "d2", name: "Credit Card 2", balance: 0, minPay: 0, interestRate: 0, isPaymentMethod: true },
+      { id: "d3", name: "Credit Card 3", balance: 0, minPay: 0, interestRate: 0, isPaymentMethod: true }
+    ],
+    goals: [
+      { id: "g1", name: "Emergency Fund (3 months expenses)", target: 0, saved: 0 }
+    ],
+    accounts: [
+      { id: "a1", name: "Cash / Wallet", type: "cash", balance: 0, autoSync: true },
+      { id: "a2", name: "Checking Account", type: "bank", balance: 0, autoSync: true },
+      { id: "a3", name: "Savings Account", type: "bank", balance: 0, autoSync: true },
+      { id: "a4", name: "Investments", type: "investment", balance: 0, autoSync: false }
+    ],
+    currency: "$",
+    lastUsedPaidWith: null,
+    lastBackup: null,
+    lastSyncAt: null,
+    lastSyncDirection: null,
+    backupFrequency: "monthly"
+  };
+}
+
+let DATA = defaultData();
+let currentView = "dash";
+let currentMonth = TODAY.getMonth();
+let currentYear = CURRENT_YEAR;
+let activeDay = null;
+let addDraft = null; // in-flight expense draft {amount, category, paidWith, note}
+
+// ═══════════════════════════════════════════════════════════════
+// PERSISTENCE
+// ═══════════════════════════════════════════════════════════════
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+    const sub = document.getElementById("subtitle");
+    if (sub) sub.textContent = `Saved • ${new Date().toLocaleTimeString()}`;
+  } catch(e) { console.error(e); toast("Save failed", true); }
+}
+
+async function load() {
+  try {
+    const rawV4 = localStorage.getItem(STORAGE_KEY);
+    if (rawV4) {
+      const parsed = JSON.parse(rawV4);
+      DATA = Object.assign(defaultData(), parsed);
+      ensureAccountsAndDebtsFlags();
+      currentYear = DATA.currentYear || CURRENT_YEAR;
+      if (!DATA.years[currentYear]) DATA.years[currentYear] = defaultYearData(currentYear);
+      return;
+    }
+    const rawV3 = localStorage.getItem(LEGACY_KEY);
+    if (rawV3) {
+      const parsed = JSON.parse(rawV3);
+      await migrateV3ToV4(parsed);
+      return;
+    }
+  } catch(e) { console.error("Load error", e); toast("Could not load saved data", true); }
+}
+
+function ensureAccountsAndDebtsFlags() {
+  DATA.debts = (DATA.debts || []).map(d => ({
+    ...d,
+    isPaymentMethod: d.isPaymentMethod !== undefined
+      ? d.isPaymentMethod
+      : !/sister|loan|family|friend/i.test(d.name || "")
+  }));
+  DATA.accounts = (DATA.accounts || []).map(a => ({
+    ...a,
+    autoSync: a.autoSync !== undefined ? a.autoSync : true
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MIGRATION (v3 → v4)
+// ═══════════════════════════════════════════════════════════════
+async function migrateV3ToV4(v3) {
+  const accounts = v3.accounts && v3.accounts.length ? v3.accounts : defaultData().accounts;
+  const defaultAcctId = accounts.find(a => /checking/i.test(a.name))?.id || accounts[0].id;
+  const choice = await askDefaultAccountModal(accounts, defaultAcctId);
+  const spendAcctId = choice || defaultAcctId;
+
+  const nd = defaultData();
+  nd.currentYear = v3.currentYear || CURRENT_YEAR;
+  nd.debts = (v3.debts || nd.debts).map(d => ({
+    id: d.id, name: d.name || "Debt",
+    balance: Number(d.balance) || 0,
+    minPay: Number(d.minPay) || 0,
+    interestRate: Number(d.interestRate) || 0,
+    isPaymentMethod: !/sister|loan|family|friend/i.test(d.name || "")
+  }));
+  nd.goals = (v3.goals || nd.goals).map(g => ({ ...g }));
+  nd.accounts = accounts.map(a => ({
+    id: a.id, name: a.name, type: a.type || "bank",
+    balance: Number(a.balance) || 0,
+    autoSync: a.autoSync !== undefined ? a.autoSync : true
+  }));
+  nd.lastBackup = v3.lastBackup || null;
+  nd.years = {};
+
+  for (const yStr in (v3.years || {})) {
+    const y = Number(yStr);
+    const oy = v3.years[yStr];
+    const ny = {
+      variableCategories: oy.variableCategories ? [...oy.variableCategories] : defaultYearData(y).variableCategories,
+      fixedCategories: oy.fixedCategories ? [...oy.fixedCategories] : defaultYearData(y).fixedCategories,
+      incomeCategories: oy.incomeCategories ? [...oy.incomeCategories] : defaultYearData(y).incomeCategories,
+      budgets: oy.budgets ? { ...oy.budgets } : {},
+      months: {}
+    };
+    ny.variableCategories.forEach(c => { if (ny.budgets[c] === undefined) ny.budgets[c] = 0; });
+
+    for (let m = 0; m < 12; m++) {
+      const om = oy.months?.[m] || {};
+      const txs = [];
+      const days = DAYS_IN_MONTH(y, m);
+
+      // Daily expenses
+      for (let d = 0; d < days; d++) {
+        const day = om.daily?.[d] || { items: {}, notes: "" };
+        for (const cat in (day.items || {})) {
+          const amt = Number(day.items[cat]) || 0;
+          if (amt > 0) {
+            txs.push({
+              id: uid("tx"), type: "expense",
+              date: toISO(y, m, d),
+              amount: amt, category: cat,
+              paidWith: { kind: "account", id: spendAcctId },
+              note: day.notes || "",
+              ts: new Date(y, m, d + 1).toISOString()
+            });
+          }
+        }
+      }
+
+      // Fixed
+      for (const cat in (om.fixed || {})) {
+        const amt = Number(om.fixed[cat]) || 0;
+        if (amt > 0) {
+          txs.push({
+            id: uid("tx"), type: "fixed",
+            date: toISO(y, m, 0),
+            amount: amt, category: cat,
+            paidWith: { kind: "account", id: spendAcctId },
+            note: "",
+            ts: new Date(y, m, 1).toISOString()
+          });
+        }
+      }
+
+      // Income
+      for (const cat in (om.income || {})) {
+        const amt = Number(om.income[cat]) || 0;
+        if (amt > 0) {
+          txs.push({
+            id: uid("tx"), type: "income",
+            date: toISO(y, m, 0),
+            amount: amt, category: cat,
+            receivedTo: spendAcctId,
+            note: "",
+            ts: new Date(y, m, 1).toISOString()
+          });
+        }
+      }
+
+      // Debt payments
+      for (const debtId in (om.debtPay || {})) {
+        const amt = Number(om.debtPay[debtId]) || 0;
+        if (amt > 0) {
+          txs.push({
+            id: uid("tx"), type: "debtPayment",
+            date: toISO(y, m, 0),
+            amount: amt, debtId,
+            paidWith: { kind: "account", id: spendAcctId },
+            note: "",
+            ts: new Date(y, m, 1).toISOString()
+          });
+        }
+      }
+
+      ny.months[m] = {
+        transactions: txs,
+        savings: om.savings ? { target: Number(om.savings.target)||0, actual: Number(om.savings.actual)||0 } : { target: 0, actual: 0 }
+      };
+    }
+    nd.years[y] = ny;
+  }
+
+  if (!nd.years[CURRENT_YEAR]) nd.years[CURRENT_YEAR] = defaultYearData(CURRENT_YEAR);
+  DATA = nd;
+  currentYear = DATA.currentYear || CURRENT_YEAR;
+  save();
+  toast("Migrated to v4 — your data is safe");
+}
+
+function askDefaultAccountModal(accounts, defaultId) {
+  return new Promise(resolve => {
+    const opts = accounts.map(a =>
+      `<option value="${a.id}" ${a.id === defaultId ? "selected" : ""}>${escapeHTML(a.name)}</option>`).join("");
+    document.getElementById("modal-content").innerHTML = `
+      <div class="modal-title">
+        <span>🔄 One-Time Migration</span>
+      </div>
+      <p style="font-size:13px;color:var(--text);margin-bottom:10px">
+        We're upgrading your data so you can tag each expense with how it was paid (credit card vs account).
+      </p>
+      <p class="note" style="margin-bottom:14px">
+        To backfill your history, we need to assume where past spending, income, and debt payments came from. You can change any of these later.
+      </p>
+      <label class="debt-field-label" style="display:block;margin-bottom:6px">Default account for past entries</label>
+      <select class="select-input" id="mig-acct" style="width:100%">${opts}</select>
+      <p class="note" style="margin-top:12px">
+        Tip: your existing account and credit-card balances stay untouched — we only tag historical transactions.
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="window.__migResolve(document.getElementById('mig-acct').value)">Continue</button>
+      </div>
+    `;
+    document.getElementById("modal-overlay").classList.add("show");
+    window.__migResolve = (val) => {
+      document.getElementById("modal-overlay").classList.remove("show");
+      delete window.__migResolve;
+      resolve(val);
+    };
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SIDE-EFFECTS ENGINE
+// ═══════════════════════════════════════════════════════════════
+function getAccount(id) { return DATA.accounts.find(a => a.id === id); }
+function getDebt(id) { return DATA.debts.find(d => d.id === id); }
+
+// Applies a transaction's effect to accounts/debts. sign=+1 when adding, -1 when removing.
+// Respects account.autoSync (if false, that account's balance is NOT auto-touched).
+function applyTxSideEffects(tx, sign) {
+  if (!tx) return;
+  const amt = (Number(tx.amount) || 0) * sign;
+  if (tx.type === "expense" || tx.type === "fixed") {
+    if (!tx.paidWith) return;
+    if (tx.paidWith.kind === "account") {
+      const acc = getAccount(tx.paidWith.id);
+      if (acc && acc.autoSync !== false) acc.balance = (Number(acc.balance)||0) - amt;
+    } else if (tx.paidWith.kind === "debt") {
+      const d = getDebt(tx.paidWith.id);
+      if (d) d.balance = (Number(d.balance)||0) + amt;
+    }
+  } else if (tx.type === "income") {
+    const acc = getAccount(tx.receivedTo);
+    if (acc && acc.autoSync !== false) acc.balance = (Number(acc.balance)||0) + amt;
+  } else if (tx.type === "debtPayment") {
+    if (tx.paidWith?.kind === "account") {
+      const acc = getAccount(tx.paidWith.id);
+      if (acc && acc.autoSync !== false) acc.balance = (Number(acc.balance)||0) - amt;
+    }
+    const d = getDebt(tx.debtId);
+    if (d) d.balance = Math.max(0, (Number(d.balance)||0) - amt);
+  }
+}
+
+function addTransaction(tx, m) {
+  const month = mo(m ?? parseISO(tx.date).m);
+  tx.id = tx.id || uid("tx");
+  tx.ts = tx.ts || new Date().toISOString();
+  month.transactions.push(tx);
+  applyTxSideEffects(tx, +1);
+  DATA.lastUsedPaidWith = tx.paidWith || (tx.receivedTo ? { kind: "account", id: tx.receivedTo } : DATA.lastUsedPaidWith);
+  save();
+}
+
+function updateTransaction(txId, patch) {
+  const { tx, month } = findTx(txId);
+  if (!tx) return;
+  applyTxSideEffects(tx, -1);
+  Object.assign(tx, patch);
+  applyTxSideEffects(tx, +1);
+  save();
+}
+
+function deleteTransaction(txId) {
+  const { tx, month, idx } = findTx(txId);
+  if (!tx) return;
+  applyTxSideEffects(tx, -1);
+  month.transactions.splice(idx, 1);
+  save();
+}
+
+function findTx(txId) {
+  for (const yStr in DATA.years) {
+    const y = DATA.years[yStr];
+    for (const mStr in y.months) {
+      const month = y.months[mStr];
+      const idx = month.transactions.findIndex(t => t.id === txId);
+      if (idx >= 0) return { tx: month.transactions[idx], month, idx, year: Number(yStr), m: Number(mStr) };
+    }
+  }
+  return {};
+}
+
+// Set the single-tx-per-(month,category,type) amount. Used for fixed/income where UX is one input.
+function setMonthCategoryAmount(type, m, category, newAmount, paidWithOrReceivedTo) {
+  const month = mo(m);
+  const existing = month.transactions.find(t => t.type === type && t.category === category);
+  if (newAmount <= 0 || !newAmount) {
+    if (existing) {
+      applyTxSideEffects(existing, -1);
+      month.transactions = month.transactions.filter(t => t !== existing);
+    }
+  } else if (existing) {
+    applyTxSideEffects(existing, -1);
+    existing.amount = newAmount;
+    if (type === "income") existing.receivedTo = paidWithOrReceivedTo;
+    else existing.paidWith = paidWithOrReceivedTo;
+    applyTxSideEffects(existing, +1);
+  } else {
+    const tx = {
+      id: uid("tx"), type,
+      date: toISO(currentYear, m, 0),
+      amount: newAmount, category,
+      note: "",
+      ts: new Date().toISOString()
+    };
+    if (type === "income") tx.receivedTo = paidWithOrReceivedTo;
+    else tx.paidWith = paidWithOrReceivedTo;
+    month.transactions.push(tx);
+    applyTxSideEffects(tx, +1);
+  }
+  save();
+}
+
+// Set single-tx-per-(month,debtId) amount for debt payments.
+function setMonthDebtPayment(m, debtId, newAmount, paidWith) {
+  const month = mo(m);
+  const existing = month.transactions.find(t => t.type === "debtPayment" && t.debtId === debtId);
+  if (!newAmount || newAmount <= 0) {
+    if (existing) {
+      applyTxSideEffects(existing, -1);
+      month.transactions = month.transactions.filter(t => t !== existing);
+    }
+  } else if (existing) {
+    applyTxSideEffects(existing, -1);
+    existing.amount = newAmount;
+    existing.paidWith = paidWith || existing.paidWith;
+    applyTxSideEffects(existing, +1);
+  } else {
+    const tx = {
+      id: uid("tx"), type: "debtPayment",
+      date: toISO(currentYear, m, 0),
+      amount: newAmount, debtId,
+      paidWith: paidWith || DATA.lastUsedPaidWith || { kind: "account", id: DATA.accounts[0]?.id },
+      note: "",
+      ts: new Date().toISOString()
+    };
+    month.transactions.push(tx);
+    applyTxSideEffects(tx, +1);
+  }
+  save();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BACKUP / RESTORE
+// ═══════════════════════════════════════════════════════════════
+function exportData() {
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `finance-tracker-${new Date().toISOString().split("T")[0]}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  DATA.lastBackup = new Date().toISOString();
+  save();
+  toast("Backup exported");
+}
+
+// iCloud Sync — uses Web Share API on iOS so the user can send the file
+// straight into the Files app → iCloud Drive.  On desktop, triggers a download
+// that the user drops into ~/Library/Mobile Documents/com~apple~CloudDocs/.
+async function syncToICloud() {
+  const payload = JSON.stringify(DATA, null, 2);
+  const filename = "finance-tracker-sync.json";
+  const file = new File([payload], filename, { type: "application/json" });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: "Finance Tracker sync",
+        text: "Tap 'Save to Files' → iCloud Drive → overwrite the existing finance-tracker-sync.json"
+      });
+      DATA.lastSyncAt = new Date().toISOString();
+      DATA.lastSyncDirection = "up";
+      save();
+      toast("Saved to iCloud — keep filename the same next time");
+      renderSettingsSyncStatus();
+      return;
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      console.warn("share failed, falling back to download", err);
+    }
+  }
+
+  const blob = new Blob([payload], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  DATA.lastSyncAt = new Date().toISOString();
+  DATA.lastSyncDirection = "up";
+  save();
+  toast("Downloaded — move it into iCloud Drive");
+  renderSettingsSyncStatus();
+}
+
+function syncFromICloudPick(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const isV4 = parsed.schemaVersion === 4 || (parsed.years && Object.values(parsed.years)[0]?.months?.[0]?.transactions);
+      const isV3 = parsed.years && parsed.debts && Object.values(parsed.years)[0]?.months?.[0]?.daily;
+      if (!isV4 && !isV3) throw new Error("Not a Finance Tracker backup");
+
+      const theirStamp = parsed.lastSyncAt || parsed.lastBackup;
+      const ourStamp = DATA.lastSyncAt || DATA.lastBackup;
+      if (theirStamp && ourStamp && new Date(theirStamp) < new Date(ourStamp)) {
+        if (!(await appConfirm(
+          `The iCloud file is OLDER than this device's data.\n\n` +
+          `iCloud: ${new Date(theirStamp).toLocaleString()}\n` +
+          `Here:  ${new Date(ourStamp).toLocaleString()}\n\n` +
+          `Overwrite anyway?`
+        ))) return;
+      }
+
+      if (isV4) {
+        DATA = Object.assign(defaultData(), parsed);
+        ensureAccountsAndDebtsFlags();
+        currentYear = DATA.currentYear || CURRENT_YEAR;
+      } else {
+        await migrateV3ToV4(parsed);
+      }
+      DATA.lastSyncAt = new Date().toISOString();
+      DATA.lastSyncDirection = "down";
+      save();
+      render();
+      toast("Synced from iCloud");
+    } catch (err) {
+      console.error(err);
+      toast("Couldn't read file: " + err.message, true);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function renderSettingsSyncStatus() {
+  const el = document.getElementById("sync-status");
+  if (!el) return;
+  if (!DATA.lastSyncAt) {
+    el.textContent = "Never synced on this device";
+    return;
+  }
+  const when = new Date(DATA.lastSyncAt);
+  const dir = DATA.lastSyncDirection === "up" ? "→ iCloud" : "← iCloud";
+  el.textContent = `Last sync: ${when.toLocaleString()} ${dir}`;
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || typeof parsed !== "object") throw new Error("Not an object");
+      // Accept both v3 and v4 backups
+      const isV4 = parsed.schemaVersion === 4 || (parsed.years && Object.values(parsed.years)[0]?.months?.[0]?.transactions);
+      const isV3Shape = parsed.years && parsed.debts && Object.values(parsed.years)[0]?.months?.[0]?.daily;
+      if (!isV4 && !isV3Shape) throw new Error("Unrecognised backup format");
+      if (!(await appConfirm("This will replace all current data. Continue?"))) return;
+      if (isV4) {
+        DATA = Object.assign(defaultData(), parsed);
+        ensureAccountsAndDebtsFlags();
+        currentYear = DATA.currentYear || CURRENT_YEAR;
+        save();
+        render();
+        toast("Data imported");
+      } else {
+        await migrateV3ToV4(parsed);
+        render();
+      }
+    } catch (err) {
+      console.error(err);
+      toast("Invalid backup: " + err.message, true);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function restoreV3Snapshot() {
+  const raw = localStorage.getItem(LEGACY_KEY);
+  if (!raw) { toast("No v3 snapshot found", true); return; }
+  appConfirm("Discard current v4 data and restore your pre-upgrade v3 snapshot?").then(async ok => {
+    if (!ok) return;
+    localStorage.removeItem(STORAGE_KEY);
+    await load();
+    render();
+    toast("v3 snapshot restored");
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+const cur = () => DATA.currency || "$";
+function fmt(v, signed = false) {
+  if (v === null || v === undefined || isNaN(v)) return cur() + "0";
+  const abs = Math.abs(Math.round(v));
+  const str = cur() + abs.toLocaleString();
+  if (signed) return v < 0 ? "-" + str : (v > 0 ? "+" + str : str);
+  return v < 0 ? "-" + str : str;
+}
+function fmtColor(v) { return v >= 0 ? "var(--green)" : "var(--red)"; }
+function yd() { return DATA.years[currentYear] || (DATA.years[currentYear] = defaultYearData(currentYear)); }
+function mo(m) {
+  if (!yd().months[m]) yd().months[m] = { transactions: [], savings: { target:0, actual:0 } };
+  const mm = yd().months[m];
+  if (!mm.transactions) mm.transactions = [];
+  if (!mm.savings) mm.savings = { target: 0, actual: 0 };
+  return mm;
+}
+function escapeHTML(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+function toast(msg, isErr) {
+  const t = document.getElementById("toast");
+  t.textContent = (isErr ? "✕ " : "✓ ") + msg;
+  t.className = "toast show" + (isErr ? " error" : "");
+  setTimeout(() => t.className = "toast" + (isErr ? " error" : ""), 1800);
+}
+
+async function appPrompt(message, defaultVal = "") {
+  return new Promise(resolve => {
+    document.getElementById("modal-content").innerHTML = `
+      <div class="modal-title">
+        <span>📝 Input</span>
+        <button class="modal-close" onclick="window.__promptResolve(null)">✕</button>
+      </div>
+      <p class="note" style="margin-bottom:12px">${escapeHTML(message)}</p>
+      <input type="text" class="text-input" id="custom-prompt-input" value="${escapeHTML(defaultVal)}"
+        onkeydown="if(event.key==='Enter') window.__promptResolve(this.value)" />
+      <div class="modal-actions" style="margin-top:16px">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="window.__promptResolve(null)">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="window.__promptResolve(document.getElementById('custom-prompt-input').value)">OK</button>
+      </div>
+    `;
+    document.getElementById("modal-overlay").classList.add("show");
+    setTimeout(() => document.getElementById("custom-prompt-input")?.focus(), 100);
+    window.__promptResolve = (val) => {
+      document.getElementById("modal-overlay").classList.remove("show");
+      delete window.__promptResolve;
+      resolve(val);
+    };
+  });
+}
+
+async function appConfirm(message) {
+  return new Promise(resolve => {
+    document.getElementById("modal-content").innerHTML = `
+      <div class="modal-title">
+        <span>⚠️ Confirm</span>
+        <button class="modal-close" onclick="window.__confirmResolve(false)">✕</button>
+      </div>
+      <p style="font-size:14px;margin-bottom:16px;color:#fff">${escapeHTML(message)}</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="window.__confirmResolve(false)">Cancel</button>
+        <button class="btn btn-danger" style="flex:1;justify-content:center" onclick="window.__confirmResolve(true)">Confirm</button>
+      </div>
+    `;
+    document.getElementById("modal-overlay").classList.add("show");
+    window.__confirmResolve = (val) => {
+      document.getElementById("modal-overlay").classList.remove("show");
+      delete window.__confirmResolve;
+      resolve(val);
+    };
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DERIVED QUERIES
+// ═══════════════════════════════════════════════════════════════
+function monthTxs(m) { return mo(m).transactions || []; }
+function monthSumByType(m, type) {
+  return monthTxs(m).filter(t => t.type === type).reduce((s, t) => s + (Number(t.amount)||0), 0);
+}
+function dailyCatSums(m, d) {
+  const out = {};
+  yd().variableCategories.forEach(c => out[c] = 0);
+  const dateStr = toISO(currentYear, m, d);
+  monthTxs(m).forEach(t => {
+    if (t.type === "expense" && t.date === dateStr) {
+      out[t.category] = (out[t.category] || 0) + (Number(t.amount)||0);
+    }
+  });
+  return out;
+}
+function dailyTotal(m, d) {
+  const dateStr = toISO(currentYear, m, d);
+  return monthTxs(m).filter(t => t.type === "expense" && t.date === dateStr)
+    .reduce((s, t) => s + (Number(t.amount)||0), 0);
+}
+function dailyTxs(m, d) {
+  const dateStr = toISO(currentYear, m, d);
+  return monthTxs(m).filter(t => t.type === "expense" && t.date === dateStr)
+    .sort((a,b) => new Date(b.ts) - new Date(a.ts));
+}
+function monthFixedByCat(m) {
+  const out = {}; yd().fixedCategories.forEach(c => out[c] = { amount: 0, paidWith: null, txId: null });
+  monthTxs(m).forEach(t => {
+    if (t.type === "fixed") {
+      out[t.category] = out[t.category] || { amount: 0, paidWith: null, txId: null };
+      out[t.category].amount = (out[t.category].amount || 0) + (Number(t.amount)||0);
+      out[t.category].paidWith = t.paidWith;
+      out[t.category].txId = t.id;
+    }
+  });
+  return out;
+}
+function monthIncomeByCat(m) {
+  const out = {}; yd().incomeCategories.forEach(c => out[c] = { amount: 0, receivedTo: null, txId: null });
+  monthTxs(m).forEach(t => {
+    if (t.type === "income") {
+      out[t.category] = out[t.category] || { amount: 0, receivedTo: null, txId: null };
+      out[t.category].amount = (out[t.category].amount || 0) + (Number(t.amount)||0);
+      out[t.category].receivedTo = t.receivedTo;
+      out[t.category].txId = t.id;
+    }
+  });
+  return out;
+}
+function monthDebtPayByDebt(m) {
+  const out = {};
+  DATA.debts.forEach(d => out[d.id] = { amount: 0, paidWith: null, txId: null });
+  monthTxs(m).forEach(t => {
+    if (t.type === "debtPayment") {
+      out[t.debtId] = out[t.debtId] || { amount: 0, paidWith: null, txId: null };
+      out[t.debtId].amount = (out[t.debtId].amount || 0) + (Number(t.amount)||0);
+      out[t.debtId].paidWith = t.paidWith;
+      out[t.debtId].txId = t.id;
+    }
+  });
+  return out;
+}
+
+function getMonthData(m) {
+  const income = monthSumByType(m, "income");
+  const fixed = monthSumByType(m, "fixed");
+  const variable = monthSumByType(m, "expense");
+  const debtPaid = monthSumByType(m, "debtPayment");
+  const expenses = fixed + variable;
+  const balance = income - expenses;
+  const catTotals = {};
+  yd().variableCategories.forEach(c => catTotals[c] = 0);
+  monthTxs(m).forEach(t => {
+    if (t.type === "expense") catTotals[t.category] = (catTotals[t.category] || 0) + (Number(t.amount)||0);
+  });
+  return { income, fixed, variable, expenses, balance, debtPaid, catTotals };
+}
+
+function getAnnual() {
+  let totInc=0, totExp=0, totDebtPaid=0, totSaved=0, totFixed=0, totVar=0;
+  const catTotals = {};
+  for (let m = 0; m < 12; m++) {
+    const md = getMonthData(m);
+    totInc += md.income; totExp += md.expenses; totDebtPaid += md.debtPaid;
+    totFixed += md.fixed; totVar += md.variable;
+    totSaved += (mo(m).savings?.actual || 0);
+    Object.keys(md.catTotals).forEach(c => { catTotals[c] = (catTotals[c] || 0) + md.catTotals[c]; });
+  }
+  const totalDebt = DATA.debts.reduce((s,d) => s + (Number(d.balance)||0), 0);
+  const debtRemaining = totalDebt;
+  const totalAssets = DATA.accounts.reduce((s,a) => s + (Number(a.balance)||0), 0);
+  const netWorth = totalAssets - debtRemaining;
+  return { totInc, totExp, balance: totInc - totExp, totDebtPaid, totSaved, totalDebt, debtRemaining, totFixed, totVar, catTotals, netWorth, totalAssets };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAID-WITH PICKER
+// ═══════════════════════════════════════════════════════════════
+// Returns a <select> that fires onChange(paidWithObj|null). For income use accountsOnly=true.
+function paidWithSelectHTML(selected, callbackName, { accountsOnly = false, allowNone = false } = {}) {
+  const accounts = DATA.accounts || [];
+  const debts = (DATA.debts || []).filter(d => d.isPaymentMethod !== false);
+  const isSel = (kind, id) => selected && selected.kind === kind && selected.id === id;
+  const opts = [];
+  if (allowNone) opts.push(`<option value="">— none —</option>`);
+  if (accounts.length) {
+    opts.push(`<optgroup label="Accounts">`);
+    accounts.forEach(a => {
+      opts.push(`<option value="account:${a.id}" ${isSel("account", a.id) ? "selected" : ""}>🏦 ${escapeHTML(a.name)}</option>`);
+    });
+    opts.push(`</optgroup>`);
+  }
+  if (!accountsOnly && debts.length) {
+    opts.push(`<optgroup label="Credit Cards">`);
+    debts.forEach(d => {
+      opts.push(`<option value="debt:${d.id}" ${isSel("debt", d.id) ? "selected" : ""}>💳 ${escapeHTML(d.name)}</option>`);
+    });
+    opts.push(`</optgroup>`);
+  }
+  return `<select class="select-input" onchange="${callbackName}(this.value ? {kind: this.value.split(':')[0], id: this.value.split(':')[1]} : null)">${opts.join("")}</select>`;
+}
+
+// Chip-style picker for the Quick-Add modal
+function paidWithChipsHTML(selected, { accountsOnly = false } = {}) {
+  const accounts = DATA.accounts || [];
+  const debts = (DATA.debts || []).filter(d => d.isPaymentMethod !== false);
+  const isSel = (kind, id) => selected && selected.kind === kind && selected.id === id;
+  const chips = [];
+  accounts.forEach(a => {
+    const icon = { cash: "💵", bank: "🏦", investment: "📈" }[a.type] || "🏦";
+    chips.push(`<button type="button" class="pw-chip ${isSel("account", a.id) ? "active" : ""}"
+      data-pw="account:${a.id}"
+      onclick="selectQuickPaidWith('account','${a.id}')">${icon} ${escapeHTML(a.name)}</button>`);
+  });
+  if (!accountsOnly) debts.forEach(d => {
+    chips.push(`<button type="button" class="pw-chip debt ${isSel("debt", d.id) ? "active" : ""}"
+      data-pw="debt:${d.id}"
+      onclick="selectQuickPaidWith('debt','${d.id}')">💳 ${escapeHTML(d.name)}</button>`);
+  });
+  return `<div class="pw-row">${chips.join("")}</div>`;
+}
+
+function paidWithLabel(pw) {
+  if (!pw) return "";
+  if (pw.kind === "account") {
+    const a = getAccount(pw.id);
+    return a ? a.name : "Account";
+  }
+  if (pw.kind === "debt") {
+    const d = getDebt(pw.id);
+    return d ? d.name : "Credit Card";
+  }
+  return "";
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INPUT HANDLERS
+// ═══════════════════════════════════════════════════════════════
+function onAmtBlur(el, key) {
+  const val = parseFloat(el.value) || 0;
+  el.value = val || "";
+  const parts = key.split("|");
+  const type = parts[0];
+
+  if (type === "savings") {
+    mo(parts[1]).savings[parts[2]] = val;
+    save();
+  } else if (type === "debt") {
+    const d = DATA.debts.find(x => x.id === parts[1]);
+    if (d) d[parts[2]] = val;
+    save();
+  } else if (type === "goal") {
+    const g = DATA.goals.find(x => x.id === parts[1]);
+    if (g) g[parts[2]] = val;
+    save();
+  } else if (type === "budget") {
+    yd().budgets[parts[1]] = val;
+    save();
+  } else if (type === "account") {
+    const a = DATA.accounts.find(x => x.id === parts[1]);
+    if (a) a[parts[2]] = val;
+    save();
+  } else if (type === "fixed") {
+    const m = parseInt(parts[1]), cat = parts[2];
+    const cur = monthFixedByCat(m)[cat] || {};
+    const pw = cur.paidWith || DATA.lastUsedPaidWith || defaultPaidWith();
+    setMonthCategoryAmount("fixed", m, cat, val, pw);
+  } else if (type === "income") {
+    const m = parseInt(parts[1]), cat = parts[2];
+    const cur = monthIncomeByCat(m)[cat] || {};
+    const to = cur.receivedTo || (DATA.lastUsedPaidWith?.kind === "account" ? DATA.lastUsedPaidWith.id : DATA.accounts.find(a=>/checking/i.test(a.name))?.id || DATA.accounts[0]?.id);
+    setMonthCategoryAmount("income", m, cat, val, to);
+  } else if (type === "debtPay") {
+    const m = parseInt(parts[1]), debtId = parts[2];
+    const cur = monthDebtPayByDebt(m)[debtId] || {};
+    const pw = cur.paidWith || DATA.lastUsedPaidWith || defaultPaidWith();
+    setMonthDebtPayment(m, debtId, val, pw);
+  }
+  refreshTotals();
+}
+
+function onTextBlur(el, key) {
+  const parts = key.split("|");
+  const type = parts[0];
+  if (type === "debtName") {
+    const d = DATA.debts.find(x => x.id === parts[1]);
+    if (d) d.name = el.value;
+  } else if (type === "goalName") {
+    const g = DATA.goals.find(x => x.id === parts[1]);
+    if (g) g.name = el.value;
+  } else if (type === "accountName") {
+    const a = DATA.accounts.find(x => x.id === parts[1]);
+    if (a) a.name = el.value;
+  }
+  save();
+}
+
+function defaultPaidWith() {
+  const checking = DATA.accounts.find(a => /checking/i.test(a.name));
+  return { kind: "account", id: (checking?.id) || DATA.accounts[0]?.id };
+}
+
+function changeFixedPaidWith(m, cat, pw) {
+  const cur = monthFixedByCat(m)[cat] || {};
+  if ((cur.amount || 0) <= 0) { DATA.lastUsedPaidWith = pw; save(); return; }
+  setMonthCategoryAmount("fixed", m, cat, cur.amount, pw);
+  refreshTotals();
+}
+function changeIncomeReceivedTo(m, cat, pw) {
+  const cur = monthIncomeByCat(m)[cat] || {};
+  const accId = pw?.kind === "account" ? pw.id : (pw?.id || null);
+  if ((cur.amount || 0) <= 0) { if (accId) DATA.lastUsedPaidWith = { kind: "account", id: accId }; save(); return; }
+  setMonthCategoryAmount("income", m, cat, cur.amount, accId);
+  refreshTotals();
+}
+function changeDebtPayPaidWith(m, debtId, pw) {
+  const cur = monthDebtPayByDebt(m)[debtId] || {};
+  if ((cur.amount || 0) <= 0) { DATA.lastUsedPaidWith = pw; save(); return; }
+  setMonthDebtPayment(m, debtId, cur.amount, pw);
+  refreshTotals();
+}
+
+function refreshTotals() {
+  const scrollY = window.scrollY;
+  render();
+  window.scrollTo(0, scrollY);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CATEGORY / ITEM MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+async function addCategory(type) {
+  const promptText = { variable: "New variable expense category:", fixed: "New fixed expense category:", income: "New income source:" }[type];
+  const name = await appPrompt(promptText);
+  if (!name || !name.trim()) return;
+  const key = { variable: "variableCategories", fixed: "fixedCategories", income: "incomeCategories" }[type];
+  if (yd()[key].includes(name.trim())) { toast("Already exists", true); return; }
+  yd()[key].push(name.trim());
+  if (type === "variable") yd().budgets[name.trim()] = 0;
+  save(); render(); toast(`Added "${name.trim()}"`);
+}
+
+async function renameCategory(type, oldName, newName) {
+  if (!newName || !newName.trim() || newName.trim() === oldName) { render(); return; }
+  const key = { variable: "variableCategories", fixed: "fixedCategories", income: "incomeCategories" }[type];
+  const arr = yd()[key];
+  const idx = arr.indexOf(oldName);
+  if (idx === -1) return;
+  if (arr.includes(newName.trim())) { toast("Name already exists", true); render(); return; }
+  arr[idx] = newName.trim();
+  if (type === "variable") {
+    yd().budgets[newName.trim()] = yd().budgets[oldName] || 0;
+    delete yd().budgets[oldName];
+  }
+  // Retag transactions in this year (fast pass)
+  Object.values(yd().months).forEach(mm => {
+    mm.transactions.forEach(t => {
+      if ((type === "variable" && t.type === "expense" && t.category === oldName) ||
+          (type === "fixed" && t.type === "fixed" && t.category === oldName) ||
+          (type === "income" && t.type === "income" && t.category === oldName)) {
+        t.category = newName.trim();
+      }
+    });
+  });
+  save(); render(); toast("Renamed");
+}
+
+async function deleteCategory(type, name) {
+  if (!(await appConfirm(`Delete "${name}"? All transactions using this category will be removed.`))) return;
+  const key = { variable: "variableCategories", fixed: "fixedCategories", income: "incomeCategories" }[type];
+  const typeKey = { variable: "expense", fixed: "fixed", income: "income" }[type];
+  yd()[key] = yd()[key].filter(c => c !== name);
+  if (type === "variable") delete yd().budgets[name];
+  Object.values(yd().months).forEach(mm => {
+    const keep = [], drop = [];
+    mm.transactions.forEach(t => (t.type === typeKey && t.category === name ? drop : keep).push(t));
+    drop.forEach(t => applyTxSideEffects(t, -1));
+    mm.transactions = keep;
+  });
+  save(); render(); toast("Deleted");
+}
+
+async function addDebt() {
+  const name = await appPrompt("Debt name:");
+  if (!name || !name.trim()) return;
+  DATA.debts.push({ id: uid("d"), name: name.trim(), balance: 0, minPay: 0, interestRate: 0, isPaymentMethod: true });
+  save(); render(); toast("Debt added");
+}
+async function deleteDebt(id) {
+  if (!(await appConfirm("Delete this debt? All associated payments will be removed."))) return;
+  // Drop tx paying this debt or paid via this debt
+  for (const yStr in DATA.years) {
+    for (const mStr in DATA.years[yStr].months) {
+      const mm = DATA.years[yStr].months[mStr];
+      const keep = [], drop = [];
+      mm.transactions.forEach(t => {
+        const kill = (t.type === "debtPayment" && t.debtId === id) ||
+                     (t.paidWith && t.paidWith.kind === "debt" && t.paidWith.id === id);
+        (kill ? drop : keep).push(t);
+      });
+      drop.forEach(t => applyTxSideEffects(t, -1));
+      mm.transactions = keep;
+    }
+  }
+  DATA.debts = DATA.debts.filter(d => d.id !== id);
+  save(); render(); toast("Deleted");
+}
+function toggleDebtPaymentMethod(id) {
+  const d = DATA.debts.find(x => x.id === id);
+  if (!d) return;
+  d.isPaymentMethod = !d.isPaymentMethod;
+  save(); render();
+}
+
+async function addGoal() {
+  const name = await appPrompt("Goal name:");
+  if (!name || !name.trim()) return;
+  DATA.goals.push({ id: uid("g"), name: name.trim(), target: 0, saved: 0 });
+  save(); render(); toast("Goal added");
+}
+async function deleteGoal(id) {
+  if (!(await appConfirm("Delete this goal?"))) return;
+  DATA.goals = DATA.goals.filter(g => g.id !== id);
+  save(); render(); toast("Deleted");
+}
+async function addAccount() {
+  const name = await appPrompt("Account name:");
+  if (!name || !name.trim()) return;
+  DATA.accounts.push({ id: uid("a"), name: name.trim(), type: "bank", balance: 0, autoSync: true });
+  save(); render(); toast("Account added");
+}
+async function deleteAccount(id) {
+  if (!(await appConfirm("Delete this account? Transactions paid from it will lose their source tag."))) return;
+  for (const yStr in DATA.years) {
+    for (const mStr in DATA.years[yStr].months) {
+      DATA.years[yStr].months[mStr].transactions.forEach(t => {
+        if (t.paidWith && t.paidWith.kind === "account" && t.paidWith.id === id) t.paidWith = null;
+        if (t.receivedTo === id) t.receivedTo = null;
+      });
+    }
+  }
+  DATA.accounts = DATA.accounts.filter(a => a.id !== id);
+  save(); render(); toast("Deleted");
+}
+function toggleAccountAutoSync(id) {
+  const a = DATA.accounts.find(x => x.id === id);
+  if (!a) return;
+  a.autoSync = !a.autoSync;
+  save(); render();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function setView(v) {
+  currentView = v;
+  if (v !== "daily") activeDay = null;
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === v));
+  render();
+  window.scrollTo(0, 0);
+}
+function switchMonth(m) { currentMonth = m; activeDay = null; render(); }
+function toggleDay(d) {
+  activeDay = activeDay === d ? null : d;
+  addDraft = null;
+  render();
+  if (activeDay !== null) setTimeout(() => document.querySelector(".day-editor")?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
+}
+function switchYear(y) {
+  currentYear = parseInt(y);
+  if (!DATA.years[currentYear]) DATA.years[currentYear] = defaultYearData(currentYear);
+  DATA.currentYear = currentYear;
+  save(); render();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER HELPERS
+// ═══════════════════════════════════════════════════════════════
+function amtInput(value, key, placeholder = "0") {
+  return `<input type="number" inputmode="decimal" step="0.01" class="amt-input"
+    value="${value || ""}" placeholder="${placeholder}"
+    onblur="onAmtBlur(this,'${key}')" onfocus="this.select()"/>`;
+}
+function renderMonthTabs(m, color = "var(--accent)") {
+  return `<div class="tab-row-scroll">${MONTHS_S.map((mn, i) => `
+    <button class="tab ${i === m ? "active" : ""}"
+      ${i === m ? `style="background:${color};box-shadow:0 2px 8px ${color}40"` : ""}
+      onclick="switchMonth(${i})">${mn}</button>`).join("")}</div>`;
+}
+function renderYearSelector() {
+  const years = Object.keys(DATA.years).map(Number).sort();
+  const maxY = Math.max(...years, CURRENT_YEAR);
+  const minY = Math.min(...years, CURRENT_YEAR);
+  const options = [];
+  for (let y = minY - 1; y <= maxY + 1; y++) options.push(y);
+  return `<select class="select-input" style="padding:6px 26px 6px 10px;font-size:13px" onchange="switchYear(this.value)">
+    ${options.map(y => `<option value="${y}" ${y === currentYear ? "selected" : ""}>${y}</option>`).join("")}
+  </select>`;
+}
+
+// Small balance strip — quick reference for accounts + credit-card debts
+function renderBalanceStrip() {
+  const chips = [];
+  DATA.accounts.forEach(a => {
+    chips.push(`<div class="balance-chip account">
+      <span class="b-label">${escapeHTML(a.name)}</span>
+      <span class="b-val">${fmt(a.balance)}</span>
+    </div>`);
+  });
+  DATA.debts.filter(d => d.isPaymentMethod).forEach(d => {
+    chips.push(`<div class="balance-chip debt">
+      <span class="b-label">${escapeHTML(d.name)}</span>
+      <span class="b-val">${fmt(d.balance)}</span>
+    </div>`);
+  });
+  return `<div class="balance-strip">${chips.join("")}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW: DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+function renderDash() {
+  const a = getAnnual();
+  const monthly = Array.from({length: 12}, (_, m) => getMonthData(m));
+  const maxVal = Math.max(...monthly.map(m => Math.max(m.income, m.expenses)), 1);
+
+  const bars = monthly.map(m => {
+    const ih = Math.round((m.income / maxVal) * 115);
+    const eh = Math.round((m.expenses / maxVal) * 115);
+    return `<div class="bar-group">
+      <div class="bar" style="height:${ih}px;background:var(--green)"></div>
+      <div class="bar" style="height:${eh}px;background:var(--red)"></div>
+    </div>`;
+  }).join("");
+
+  let cum = 0;
+  const cumData = monthly.map(m => { cum += m.balance; return cum; });
+  const minCum = Math.min(...cumData, 0);
+  const maxCum = Math.max(...cumData, 0);
+  const range = maxCum - minCum || 1;
+  const cumBars = cumData.map(v => {
+    const h = Math.round(((v - minCum) / range) * 100) + 4;
+    return `<div style="flex:1;height:${h}px;border-radius:3px 3px 0 0;background:${v >= 0 ? "var(--accent)" : "var(--red)"};opacity:0.8;min-height:3px"></div>`;
+  }).join("");
+
+  const sortedCats = Object.entries(a.catTotals).filter(([,v]) => v > 0).sort((x,y) => y[1] - x[1]);
+  const catBars = sortedCats.map(([name, val]) => {
+    const pct = a.totVar > 0 ? (val / a.totVar * 100) : 0;
+    return `<div class="cat-breakdown">
+      <div class="cat-breakdown-name">${escapeHTML(name)}</div>
+      <div class="cat-breakdown-bar"><div class="cat-breakdown-bar-fill" style="width:${pct}%;background:${colorFor(name)}"></div></div>
+      <div class="cat-breakdown-val">${fmt(val)}</div>
+    </div>`;
+  }).join("");
+
+  const barLabels = MONTHS_S.map(m => `<div class="bar-label">${m}</div>`).join("");
+
+  return `
+  <div class="flex justify-between items-center mb-2">
+    <span class="text-muted" style="font-size:11px">Year</span>
+    ${renderYearSelector()}
+  </div>
+
+  ${renderBalanceStrip()}
+
+  <div class="kpi-grid">
+    <div class="kpi" style="--accent-color:var(--green)">
+      <div class="kpi-label">Income</div>
+      <div class="kpi-value" style="color:var(--green)">${fmt(a.totInc)}</div>
+      <div class="kpi-sub">${currentYear}</div>
+    </div>
+    <div class="kpi" style="--accent-color:var(--red)">
+      <div class="kpi-label">Expenses</div>
+      <div class="kpi-value" style="color:var(--red)">${fmt(a.totExp)}</div>
+      <div class="kpi-sub">${currentYear}</div>
+    </div>
+    <div class="kpi" style="--accent-color:${a.balance >= 0 ? 'var(--green)' : 'var(--red)'}">
+      <div class="kpi-label">Net Balance</div>
+      <div class="kpi-value" style="color:${fmtColor(a.balance)}">${fmt(a.balance, true)}</div>
+      <div class="kpi-sub">${a.balance >= 0 ? 'Surplus' : 'Deficit'}</div>
+    </div>
+    <div class="kpi" style="--accent-color:var(--purple)">
+      <div class="kpi-label">Total Debt</div>
+      <div class="kpi-value" style="color:var(--purple)">${fmt(a.debtRemaining)}</div>
+      <div class="kpi-sub">${fmt(a.totDebtPaid)} paid this yr</div>
+    </div>
+    <div class="kpi" style="--accent-color:var(--teal)">
+      <div class="kpi-label">Net Worth</div>
+      <div class="kpi-value" style="color:${a.netWorth >= 0 ? 'var(--teal)' : 'var(--red)'}">${fmt(a.netWorth, true)}</div>
+      <div class="kpi-sub">Assets − Debt</div>
+    </div>
+    <div class="kpi" style="--accent-color:var(--accent)">
+      <div class="kpi-label">Saved</div>
+      <div class="kpi-value" style="color:var(--accent)">${fmt(a.totSaved)}</div>
+      <div class="kpi-sub">This year</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-left">📊 Income vs Expenses</div></div>
+    <div class="chart-legend">
+      <span><span class="legend-dot" style="background:var(--green)"></span>Income</span>
+      <span><span class="legend-dot" style="background:var(--red)"></span>Expenses</span>
+    </div>
+    <div class="bar-chart">${bars}</div>
+    <div class="bar-labels">${barLabels}</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-left">📈 Cumulative Balance</div></div>
+    <div class="bar-chart" style="height:100px">${cumBars}</div>
+    <div class="bar-labels">${barLabels}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+      Ending balance: <span class="mono" style="color:${fmtColor(a.balance)};font-weight:600">${fmt(a.balance, true)}</span>
+    </div>
+  </div>
+
+  ${sortedCats.length > 0 ? `<div class="card">
+    <div class="card-title"><div class="card-title-left">🍕 Variable Spending</div></div>
+    ${catBars}
+    <div class="total-row" style="padding-top:12px">
+      <span class="total-label text-dim">Variable Total</span>
+      <span class="total-val">${fmt(a.totVar)}</span>
+    </div>
+    <div class="flex justify-between" style="margin-top:6px;font-size:11px">
+      <span class="text-muted">Fixed expenses</span>
+      <span class="mono">${fmt(a.totFixed)}</span>
+    </div>
+  </div>` : ""}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW: DAILY  (transaction-level)
+// ═══════════════════════════════════════════════════════════════
+function renderDaily() {
+  const m = currentMonth;
+  const days = DAYS_IN_MONTH(currentYear, m);
+  const vars = yd().variableCategories;
+  const isCurrentMonth = currentYear === TODAY.getFullYear() && m === TODAY.getMonth();
+
+  const dayBtns = Array.from({length: days}, (_, d) => {
+    const total = dailyTotal(m, d);
+    const isToday = isCurrentMonth && d === TODAY.getDate() - 1;
+    let cls = "day-btn";
+    if (activeDay === d) cls += " active";
+    else if (total > 0) cls += " has-data";
+    if (isToday) cls += " today";
+    return `<button id="day-btn-${d}" class="${cls}" onclick="toggleDay(${d})">
+      <span>${d + 1}</span>${total > 0 ? `<span class="day-amt">${cur()}${Math.round(total)}</span>` : ""}
+    </button>`;
+  }).join("");
+
+  let editor = "";
+  if (activeDay !== null) {
+    const txs = dailyTxs(m, activeDay);
+    const total = txs.reduce((s,t) => s + (Number(t.amount)||0), 0);
+
+    const txRows = txs.length ? `<div class="tx-list">${txs.map(t => {
+      const pw = t.paidWith;
+      const pwLabel = pw ? (pw.kind === "debt" ? `💳 ${escapeHTML(paidWithLabel(pw))}` : `🏦 ${escapeHTML(paidWithLabel(pw))}`) : "—";
+      const pwClass = pw?.kind === "debt" ? "debt" : "account";
+      return `<div class="tx-row">
+        <span class="tx-cat-dot" style="background:${colorFor(t.category)}"></span>
+        <div class="tx-main">
+          <span class="tx-cat-name">${escapeHTML(t.category)}</span>
+          <div class="tx-meta">
+            <span class="tx-meta-tag ${pwClass}">${pwLabel}</span>
+            ${t.note ? `<span>· ${escapeHTML(t.note)}</span>` : ""}
+          </div>
+        </div>
+        <span class="tx-amt">${fmt(t.amount)}</span>
+        <button class="delete-btn" onclick="handleDeleteTx('${t.id}')">🗑</button>
+      </div>`;
+    }).join("")}</div>` : `<div class="empty" style="padding:18px 10px"><div style="opacity:0.6">No transactions yet — tap the button below to add one.</div></div>`;
+
+    // Draft form
+    const draft = addDraft || { amount: "", category: vars[0], paidWith: DATA.lastUsedPaidWith || defaultPaidWith(), note: "" };
+    addDraft = draft;
+
+    const catOpts = vars.map(c => `<option value="${escapeHTML(c)}" ${c === draft.category ? "selected" : ""}>${escapeHTML(c)}</option>`).join("");
+    const pwVal = draft.paidWith ? `${draft.paidWith.kind}:${draft.paidWith.id}` : "";
+    const pwOpts = (() => {
+      const opts = [];
+      opts.push(`<optgroup label="Accounts">`);
+      DATA.accounts.forEach(a => opts.push(`<option value="account:${a.id}" ${pwVal === `account:${a.id}` ? "selected" : ""}>🏦 ${escapeHTML(a.name)}</option>`));
+      opts.push(`</optgroup>`);
+      const cards = DATA.debts.filter(d => d.isPaymentMethod);
+      if (cards.length) {
+        opts.push(`<optgroup label="Credit Cards">`);
+        cards.forEach(d => opts.push(`<option value="debt:${d.id}" ${pwVal === `debt:${d.id}` ? "selected" : ""}>💳 ${escapeHTML(d.name)}</option>`));
+        opts.push(`</optgroup>`);
+      }
+      return opts.join("");
+    })();
+
+    editor = `<div class="day-editor fade-in">
+      <div class="day-editor-title">
+        <span>${MONTHS[m]} ${activeDay + 1}</span>
+        <span class="mono" style="color:var(--accent)">${fmt(total)}</span>
+      </div>
+      ${txRows}
+      <div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--border-strong)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <label class="debt-field-label">Amount</label>
+            <input type="number" inputmode="decimal" step="0.01" class="amt-input"
+              style="width:100%;text-align:left" placeholder="0.00"
+              value="${draft.amount || ""}"
+              oninput="addDraft.amount=this.value"/>
+          </div>
+          <div>
+            <label class="debt-field-label">Category</label>
+            <select class="select-input" style="width:100%" onchange="addDraft.category=this.value">${catOpts}</select>
+          </div>
+        </div>
+        <div style="margin-top:8px">
+          <label class="debt-field-label">Paid with</label>
+          <select class="select-input" style="width:100%" onchange="addDraft.paidWith=this.value?{kind:this.value.split(':')[0],id:this.value.split(':')[1]}:null">${pwOpts}</select>
+        </div>
+        <div style="margin-top:8px">
+          <label class="debt-field-label">Note (optional)</label>
+          <input type="text" class="text-input" placeholder="e.g. Loblaws weekly shop"
+            value="${escapeHTML(draft.note || "")}"
+            oninput="addDraft.note=this.value"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px" onclick="commitDailyDraft(${m},${activeDay})">+ Add Expense</button>
+        <button class="btn-ghost btn" style="margin-top:8px;width:100%;justify-content:center" onclick="activeDay=null;addDraft=null;render()">Close</button>
+      </div>
+    </div>`;
+  }
+
+  const monthData = getMonthData(m);
+
+  return `
+  <div class="flex justify-between items-center mb-2">
+    <span class="text-muted" style="font-size:11px">Year</span>
+    ${renderYearSelector()}
+  </div>
+  ${renderMonthTabs(m, "var(--orange)")}
+
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-left">📅 ${MONTHS[m]} ${currentYear}</div>
+      <span class="badge accent">${fmt(monthData.variable)}</span>
+    </div>
+    <p class="note">Tap a day to see its transactions · Today is highlighted in teal</p>
+    <div class="day-grid">${dayBtns}</div>
+    ${editor}
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-left">⚙️ Categories</div></div>
+    ${vars.map(c => `
+      <div class="form-row">
+        <input type="text" class="editable-label" value="${escapeHTML(c)}"
+          style="color:${colorFor(c)};font-weight:500"
+          onblur="renameCategory('variable','${escapeHTML(c)}',this.value)"
+          onkeydown="if(event.key==='Enter'){this.blur();}"/>
+        <button class="delete-btn" onclick="deleteCategory('variable','${escapeHTML(c)}')" title="Delete">🗑</button>
+      </div>`).join("")}
+    <button class="btn-add" onclick="addCategory('variable')">+ Add Category</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-left">📊 ${MONTHS_S[m]} Summary</div></div>
+    <div class="flex justify-between" style="font-size:12px;margin-bottom:6px">
+      <span class="text-dim">Variable</span><span class="mono">${fmt(monthData.variable)}</span>
+    </div>
+    <div class="flex justify-between" style="font-size:12px;margin-bottom:6px">
+      <span class="text-dim">Fixed</span><span class="mono">${fmt(monthData.fixed)}</span>
+    </div>
+    <div class="total-row">
+      <span class="total-label text-dim">Total Expenses</span>
+      <span class="total-val" style="color:var(--red)">${fmt(monthData.expenses)}</span>
+    </div>
+  </div>
+  `;
+}
+
+function commitDailyDraft(m, d) {
+  if (!addDraft) return;
+  const amt = parseFloat(addDraft.amount);
+  if (!amt || amt <= 0) { toast("Enter an amount", true); return; }
+  if (!addDraft.category) { toast("Pick a category", true); return; }
+  if (!addDraft.paidWith) { toast("Pick a payment method", true); return; }
+  addTransaction({
+    type: "expense",
+    date: toISO(currentYear, m, d),
+    amount: amt,
+    category: addDraft.category,
+    paidWith: addDraft.paidWith,
+    note: (addDraft.note || "").trim()
+  }, m);
+  addDraft = { amount: "", category: addDraft.category, paidWith: addDraft.paidWith, note: "" };
+  render();
+  toast(`Added ${fmt(amt)}`);
+}
+
+async function handleDeleteTx(id) {
+  if (!(await appConfirm("Delete this transaction?"))) return;
+  deleteTransaction(id);
+  render();
+  toast("Deleted");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW: BUDGET (Fixed + limits)
+// ═══════════════════════════════════════════════════════════════
+function renderBudget() {
+  const m = currentMonth;
+  const monthData = getMonthData(m);
+  const fixedMap = monthFixedByCat(m);
+
+  const fixedRows = yd().fixedCategories.map(f => {
+    const row = fixedMap[f] || { amount: 0, paidWith: null };
+    const pw = row.paidWith || DATA.lastUsedPaidWith || defaultPaidWith();
+    return `<div style="padding:11px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px">
+      <div class="flex justify-between items-center gap-2">
+        <input type="text" class="editable-label" value="${escapeHTML(f)}"
+          onblur="renameCategory('fixed','${escapeHTML(f)}',this.value)"
+          onkeydown="if(event.key==='Enter'){this.blur();}"/>
+        <div class="flex items-center gap-2">
+          ${amtInput(row.amount || 0, `fixed|${m}|${f}`)}
+          <button class="delete-btn" onclick="deleteCategory('fixed','${escapeHTML(f)}')">🗑</button>
+        </div>
+      </div>
+      <div class="flex items-center gap-2" style="gap:6px">
+        <span class="text-muted" style="font-size:10px">Paid with:</span>
+        ${paidWithSelectHTML(pw, `__fixedPW_${m}_${btoa(unescape(encodeURIComponent(f))).replace(/=/g,"")}`)}
+      </div>
+    </div>`;
+  }).join("");
+
+  // Register per-row callbacks (simple inline closures)
+  yd().fixedCategories.forEach(f => {
+    const key = `__fixedPW_${m}_${btoa(unescape(encodeURIComponent(f))).replace(/=/g,"")}`;
+    window[key] = (pw) => changeFixedPaidWith(m, f, pw);
+  });
+
+  const budgetCards = yd().variableCategories.map(c => {
+    const spent = monthData.catTotals[c] || 0;
+    const budget = yd().budgets[c] || 0;
+    const pct = budget > 0 ? (spent / budget * 100) : 0;
+    let cls = "budget-card";
+    if (pct >= 100) cls += " over";
+    else if (pct >= 80) cls += " warning";
+    const barCls = pct >= 100 ? "red" : (pct >= 80 ? "yellow" : "green");
+    return `<div class="${cls}">
+      <div class="budget-header">
+        <span class="budget-name" style="color:${colorFor(c)}">${escapeHTML(c)}</span>
+        ${budget > 0 ? `<span class="budget-nums">${fmt(spent)} / ${fmt(budget)}</span>` : `<span class="text-muted" style="font-size:10px">No limit</span>`}
+      </div>
+      <div class="flex items-center gap-2">
+        <div style="flex:1">
+          <div class="progress-bar">
+            <div class="progress-fill ${barCls}" style="width:${Math.min(pct, 100)}%"></div>
+          </div>
+        </div>
+        ${amtInput(budget, `budget|${c}`, "Limit")}
+      </div>
+      ${pct >= 100 ? `<div style="font-size:10px;color:var(--red);margin-top:6px;font-weight:600">⚠️ Over budget by ${fmt(spent - budget)}</div>` : pct >= 80 ? `<div style="font-size:10px;color:var(--yellow);margin-top:6px;font-weight:600">⚠️ ${pct.toFixed(0)}% of budget used</div>` : ""}
+    </div>`;
+  }).join("");
+
+  return `
+  ${renderMonthTabs(m, "var(--red)")}
+
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-left">🔒 Fixed Expenses</div>
+    </div>
+    <p class="note">Set these once per month (rent, insurance, subs). Pick how each one gets paid — balances update automatically.</p>
+    ${fixedRows}
+    <button class="btn-add" onclick="addCategory('fixed')">+ Add Fixed Expense</button>
+    <div class="total-row">
+      <span class="total-label" style="color:var(--red)">Total Fixed</span>
+      <span class="total-val" style="color:var(--red)">${fmt(monthData.fixed)}</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-left">🎯 Monthly Budget Limits</div></div>
+    <p class="note">Limit per variable category — 80% = yellow, 100% = red.</p>
+    ${budgetCards}
+  </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW: INCOME
+// ═══════════════════════════════════════════════════════════════
+function renderIncome() {
+  const m = currentMonth;
+  const monthData = getMonthData(m);
+  const incMap = monthIncomeByCat(m);
+
+  const rows = yd().incomeCategories.map(c => {
+    const row = incMap[c] || { amount: 0, receivedTo: null };
+    const receivedToPW = row.receivedTo ? { kind: "account", id: row.receivedTo } : (DATA.lastUsedPaidWith?.kind === "account" ? DATA.lastUsedPaidWith : defaultPaidWith());
+    return `<div style="padding:11px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px">
+      <div class="flex justify-between items-center gap-2">
+        <input type="text" class="editable-label" value="${escapeHTML(c)}"
+          onblur="renameCategory('income','${escapeHTML(c)}',this.value)"
+          onkeydown="if(event.key==='Enter'){this.blur();}"/>
+        <div class="flex items-center gap-2">
+          ${amtInput(row.amount || 0, `income|${m}|${c}`)}
+          <button class="delete-btn" onclick="deleteCategory('income','${escapeHTML(c)}')">🗑</button>
+        </div>
+      </div>
+      <div class="flex items-center gap-2" style="gap:6px">
+        <span class="text-muted" style="font-size:10px">Received to:</span>
+        ${paidWithSelectHTML(receivedToPW, `__incomePW_${m}_${btoa(unescape(encodeURIComponent(c))).replace(/=/g,"")}`, { accountsOnly: true })}
+      </div>
+    </div>`;
+  }).join("");
+
+  yd().incomeCategories.forEach(c => {
+    const key = `__incomePW_${m}_${btoa(unescape(encodeURIComponent(c))).replace(/=/g,"")}`;
+    window[key] = (pw) => changeIncomeReceivedTo(m, c, pw);
+  });
+
+  const monthlyInc = Array.from({length: 12}, (_, i) => getMonthData(i).income);
+  const maxInc = Math.max(...monthlyInc, 1);
+  const incBars = monthlyInc.map((v, i) => {
+    const h = Math.round((v / maxInc) * 100) + 2;
+    return `<div style="flex:1;height:${h}px;border-radius:3px 3px 0 0;background:${i === m ? "var(--green)" : "rgba(39,174,96,0.4)"};min-height:3px"></div>`;
+  }).join("");
+  const incLabels = MONTHS_S.map((mn, i) => `<div class="bar-label" style="${i === m ? "color:var(--green);font-weight:700" : ""}">${mn}</div>`).join("");
+
+  return `
+  ${renderMonthTabs(m, "var(--green)")}
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-left">💵 ${MONTHS[m]} Income</div></div>
+    ${rows}
+    <button class="btn-add" onclick="addCategory('income')">+ Add Income Source</button>
+    <div class="total-row">
+      <span class="total-label" style="color:var(--green)">Total Income</span>
+      <span class="total-val" style="color:var(--green)">${fmt(monthData.income)}</span>
+    </div>
+    <div class="divider"></div>
+    <div class="flex justify-between" style="font-size:12px;margin-bottom:6px">
+      <span class="text-dim">Total Expenses</span>
+      <span class="mono" style="color:var(--red)">${fmt(monthData.expenses)}</span>
+    </div>
+    <div class="flex justify-between" style="font-size:14px;font-weight:700">
+      <span>Balance</span>
+      <span class="mono" style="color:${fmtColor(monthData.balance)}">${fmt(monthData.balance, true)}</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-left">📊 Income Trend</div></div>
+    <div class="bar-chart" style="height:110px">${incBars}</div>
+    <div class="bar-labels">${incLabels}</div>
+  </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW: DEBT
+// ═══════════════════════════════════════════════════════════════
+function renderDebt() {
+  const m = currentMonth;
+  const a = getAnnual();
+  const payMap = monthDebtPayByDebt(m);
+
+  const overviewCards = DATA.debts.map(d => {
+    const balance = Number(d.balance) || 0;
+    const paidYTD = Array.from({length: 12}, (_, i) => monthDebtPayByDebt(i)[d.id]?.amount || 0).reduce((s, v) => s + v, 0);
+    return `<div class="debt-card">
+      <div class="debt-header">
+        <input type="text" class="debt-name-input" value="${escapeHTML(d.name)}"
+          onblur="onTextBlur(this,'debtName|${d.id}')"
+          onkeydown="if(event.key==='Enter'){this.blur();}"/>
+        <button class="delete-btn" onclick="deleteDebt('${d.id}')">🗑</button>
+      </div>
+      <div class="debt-grid">
+        <div>
+          <div class="debt-field-label">Balance</div>
+          ${amtInput(balance, `debt|${d.id}|balance`)}
+        </div>
+        <div>
+          <div class="debt-field-label">Min Pay</div>
+          ${amtInput(d.minPay, `debt|${d.id}|minPay`)}
+        </div>
+        <div>
+          <div class="debt-field-label">Rate %</div>
+          <input type="number" inputmode="decimal" step="0.1" class="amt-input" style="width:100%"
+            value="${d.interestRate || ""}" placeholder="0"
+            onblur="onAmtBlur(this,'debt|${d.id}|interestRate')"/>
+        </div>
+      </div>
+      <div class="debt-stats">
+        <span style="color:var(--green)">Paid ${currentYear}: ${fmt(paidYTD)}</span>
+        <span style="color:var(--red)">Current: ${fmt(balance)}</span>
+      </div>
+      <div class="flex items-center gap-2" style="margin-top:10px;font-size:10px;color:var(--text-dim)">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" ${d.isPaymentMethod ? "checked" : ""} onchange="toggleDebtPaymentMethod('${d.id}')" style="accent-color:var(--accent)"/>
+          Usable as payment method
+        </label>
+      </div>
+    </div>`;
+  }).join("");
+
+  // Debt payoff simulator (uses current balance, constant avg pay)
+  const monthPay = Object.values(payMap).reduce((s,r) => s + (r.amount||0), 0);
+  const avgMonthlyPay = (() => {
+    let total = 0, n = 0;
+    for (let i = 0; i < 12; i++) {
+      const p = monthSumByType(i, "debtPayment");
+      if (p > 0) { total += p; n++; }
+    }
+    return n > 0 ? total / n : monthPay;
+  })();
+
+  let avSim = "", snSim = "";
+  const activeDebts = DATA.debts.filter(d => d.balance > 0);
+  if (activeDebts.length > 0 && avgMonthlyPay > 0) {
+    const simulate = (mode) => {
+      const debts = activeDebts.map(d => ({ ...d, balance: Number(d.balance)||0 }));
+      debts.sort((x, y) => mode === "avalanche" ? (y.interestRate||0) - (x.interestRate||0) : x.balance - y.balance);
+      let months = 0, totalInterest = 0;
+      const avgPay = avgMonthlyPay;
+      while (debts.some(d => d.balance > 0) && months < 600) {
+        let remaining = avgPay;
+        debts.forEach(d => {
+          if (d.balance > 0) {
+            const interest = d.balance * ((d.interestRate || 0) / 100 / 12);
+            d.balance += interest; totalInterest += interest;
+          }
+        });
+        debts.forEach(d => {
+          if (d.balance > 0 && remaining > 0) {
+            const pay = Math.min(d.minPay || 0, d.balance, remaining);
+            d.balance -= pay; remaining -= pay;
+          }
+        });
+        const target = debts.find(d => d.balance > 0);
+        if (target && remaining > 0) {
+          const pay = Math.min(target.balance, remaining);
+          target.balance -= pay;
+        }
+        months++;
+      }
+      return { months, totalInterest };
+    };
+    const av = simulate("avalanche");
+    const sn = simulate("snowball");
+    avSim = `<div class="flex justify-between" style="padding:6px 0;font-size:12px">
+      <span class="text-dim">🏔️ Avalanche (highest rate first)</span>
+      <span class="mono">${av.months} mo · <span style="color:var(--red)">${fmt(av.totalInterest)}</span> interest</span>
+    </div>`;
+    snSim = `<div class="flex justify-between" style="padding:6px 0;font-size:12px">
+      <span class="text-dim">❄️ Snowball (smallest first)</span>
+      <span class="mono">${sn.months} mo · <span style="color:var(--red)">${fmt(sn.totalInterest)}</span> interest</span>
+    </div>`;
+  }
+
+  const payRows = DATA.debts.map(d => {
+    const row = payMap[d.id] || { amount: 0, paidWith: null };
+    const pw = row.paidWith || DATA.lastUsedPaidWith || defaultPaidWith();
+    return `<div style="padding:11px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px">
+      <div class="flex justify-between items-center gap-2">
+        <div class="form-label">${escapeHTML(d.name)}</div>
+        ${amtInput(row.amount || 0, `debtPay|${m}|${d.id}`)}
+      </div>
+      <div class="flex items-center gap-2" style="gap:6px">
+        <span class="text-muted" style="font-size:10px">Paid from:</span>
+        ${paidWithSelectHTML(pw, `__debtPayPW_${m}_${d.id}`, { accountsOnly: true })}
+      </div>
+    </div>`;
+  }).join("");
+
+  DATA.debts.forEach(d => {
+    window[`__debtPayPW_${m}_${d.id}`] = (pw) => changeDebtPayPaidWith(m, d.id, pw);
+  });
+
+  return `
+  <div class="kpi-grid">
+    <div class="kpi" style="--accent-color:var(--purple)">
+      <div class="kpi-label">Total Debt</div>
+      <div class="kpi-value" style="color:var(--purple)">${fmt(a.totalDebt)}</div>
+    </div>
+    <div class="kpi" style="--accent-color:var(--green)">
+      <div class="kpi-label">Paid This Year</div>
+      <div class="kpi-value" style="color:var(--green)">${fmt(a.totDebtPaid)}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-left">💳 My Debts</div>
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="addDebt()">+ Add</button>
+    </div>
+    <p class="note">Uncheck "Usable as payment method" for non-credit debts (e.g. personal loans). Balance auto-decreases as you log payments.</p>
+    ${overviewCards || '<div class="empty"><div class="empty-icon">🎉</div>No debts tracked</div>'}
+  </div>
+
+  ${avSim ? `<div class="card">
+    <div class="card-title"><div class="card-title-left">🎯 Debt Payoff Projection</div></div>
+    <p class="note">Based on avg ${fmt(avgMonthlyPay)}/month (actual pace this year). Interest rate required for accuracy.</p>
+    ${avSim}${snSim}
+  </div>` : ""}
+
+  ${renderMonthTabs(m, "var(--purple)")}
+  <div class="card">
+    <div class="card-title"><div class="card-title-left">💳 ${MONTHS[m]} Payments</div></div>
+    ${payRows}
+    <div class="total-row">
+      <span class="total-label" style="color:var(--purple)">Month Total</span>
+      <span class="total-val" style="color:var(--purple)">${fmt(monthPay)}</span>
+    </div>
+  </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW: WEALTH (Accounts, Goals, Savings)
+// ═══════════════════════════════════════════════════════════════
+function renderWealth() {
+  const m = currentMonth;
+  const md = mo(m);
+  const a = getAnnual();
+  const totalAssets = a.totalAssets;
+
+  const accountCards = DATA.accounts.map(acc => {
+    const icon = { cash: "💵", bank: "🏦", investment: "📈" }[acc.type] || "💰";
+    return `<div style="padding:11px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:6px">
+      <div class="flex justify-between items-center">
+        <div class="form-label">
+          <span>${icon}</span>
+          <input type="text" class="editable-label" value="${escapeHTML(acc.name)}"
+            onblur="onTextBlur(this,'accountName|${acc.id}')"
+            onkeydown="if(event.key==='Enter'){this.blur();}"/>
+        </div>
+        <div class="flex items-center gap-2">
+          ${amtInput(acc.balance, `account|${acc.id}|balance`)}
+          <button class="delete-btn" onclick="deleteAccount('${acc.id}')">🗑</button>
+        </div>
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:var(--text-dim)">
+        <input type="checkbox" ${acc.autoSync ? "checked" : ""} onchange="toggleAccountAutoSync('${acc.id}')" style="accent-color:var(--accent)"/>
+        Auto-sync (adjust balance when transactions use this account)
+      </label>
+    </div>`;
+  }).join("");
+
+  const goalCards = DATA.goals.map(g => {
+    const pct = g.target > 0 ? (g.saved / g.target * 100) : 0;
+    return `<div class="goal-card">
+      <div class="flex justify-between items-center">
+        <input type="text" class="goal-name-input" value="${escapeHTML(g.name)}"
+          onblur="onTextBlur(this,'goalName|${g.id}')"
+          onkeydown="if(event.key==='Enter'){this.blur();}"/>
+        <button class="delete-btn" onclick="deleteGoal('${g.id}')">🗑</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+        <div>
+          <div class="debt-field-label">Target</div>
+          ${amtInput(g.target, `goal|${g.id}|target`)}
+        </div>
+        <div>
+          <div class="debt-field-label">Saved</div>
+          ${amtInput(g.saved, `goal|${g.id}|saved`)}
+        </div>
+      </div>
+      <div class="flex justify-between" style="font-size:10px;margin-top:6px">
+        <span class="text-muted">Remaining: ${fmt(Math.max(0, (g.target||0) - (g.saved||0)))}</span>
+        <span class="text-muted">${pct.toFixed(0)}% complete</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill teal" style="width:${Math.min(pct, 100)}%"></div></div>
+    </div>`;
+  }).join("");
+
+  const savDiff = (md.savings?.actual || 0) - (md.savings?.target || 0);
+
+  return `
+  <div class="kpi-grid">
+    <div class="kpi" style="--accent-color:var(--teal)">
+      <div class="kpi-label">Net Worth</div>
+      <div class="kpi-value" style="color:${a.netWorth >= 0 ? 'var(--teal)' : 'var(--red)'}">${fmt(a.netWorth, true)}</div>
+      <div class="kpi-sub">${fmt(totalAssets)} − ${fmt(a.debtRemaining)}</div>
+    </div>
+    <div class="kpi" style="--accent-color:var(--accent)">
+      <div class="kpi-label">Total Saved</div>
+      <div class="kpi-value" style="color:var(--accent)">${fmt(a.totSaved)}</div>
+      <div class="kpi-sub">${currentYear}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-left">💎 Accounts & Assets</div>
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="addAccount()">+ Add</button>
+    </div>
+    <p class="note">Balances auto-adjust as you log transactions (when auto-sync is on).</p>
+    ${accountCards}
+    <div class="total-row">
+      <span class="total-label" style="color:var(--teal)">Total Assets</span>
+      <span class="total-val" style="color:var(--teal)">${fmt(totalAssets)}</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-left">🎯 Savings Goals</div>
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:10px" onclick="addGoal()">+ Add</button>
+    </div>
+    ${goalCards || '<div class="empty"><div class="empty-icon">🎯</div>No goals yet</div>'}
+  </div>
+
+  ${renderMonthTabs(m, "var(--teal)")}
+  <div class="card">
+    <div class="card-title"><div class="card-title-left">💰 ${MONTHS[m]} Savings</div></div>
+    <div class="form-row">
+      <div class="form-label">🎯 Target</div>
+      ${amtInput(md.savings?.target, `savings|${m}|target`)}
+    </div>
+    <div class="form-row">
+      <div class="form-label">✅ Actual</div>
+      ${amtInput(md.savings?.actual, `savings|${m}|actual`)}
+    </div>
+    <div class="total-row">
+      <span class="total-label" style="color:${savDiff >= 0 ? 'var(--green)' : 'var(--red)'}">vs Target</span>
+      <span class="total-val mono" style="color:${savDiff >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(savDiff, true)}</span>
+    </div>
+  </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW: INSIGHTS
+// ═══════════════════════════════════════════════════════════════
+function renderInsights() {
+  const a = getAnnual();
+  const monthly = Array.from({length: 12}, (_, m) => getMonthData(m));
+  const insights = [];
+  const curM = TODAY.getMonth();
+
+  if (curM > 0 && monthly[curM].expenses > 0) {
+    const curExp = monthly[curM].expenses;
+    const prevExp = monthly[curM - 1].expenses;
+    if (prevExp > 0) {
+      const diff = ((curExp - prevExp) / prevExp * 100);
+      if (Math.abs(diff) > 10) {
+        insights.push({
+          level: diff > 0 ? "warning" : "positive",
+          icon: diff > 0 ? "📈" : "📉",
+          title: `${MONTHS_S[curM]} spending is ${diff > 0 ? "up" : "down"} ${Math.abs(diff).toFixed(0)}% vs ${MONTHS_S[curM-1]}`,
+          body: `This month: ${fmt(curExp)} · Last month: ${fmt(prevExp)} · Change: ${fmt(curExp - prevExp, true)}`
+        });
+      }
+    }
+  }
+
+  Object.entries(a.catTotals).forEach(([cat, total]) => {
+    if (curM > 0 && total > 0) {
+      const curCat = monthly[curM].catTotals[cat] || 0;
+      const prevCat = monthly[curM - 1].catTotals[cat] || 0;
+      if (prevCat > 0 && curCat > 0) {
+        const diff = ((curCat - prevCat) / prevCat * 100);
+        if (diff > 30 && curCat > 50) {
+          insights.push({
+            level: "warning", icon: "⚠️",
+            title: `${cat} spending up ${diff.toFixed(0)}% this month`,
+            body: `${MONTHS_S[curM-1]}: ${fmt(prevCat)} → ${MONTHS_S[curM]}: ${fmt(curCat)}`
+          });
+        }
+      }
+    }
+  });
+
+  if (a.balance < 0) {
+    insights.push({ level: "critical", icon: "🚨",
+      title: `You're running a deficit of ${fmt(Math.abs(a.balance))}`,
+      body: `Expenses exceed income by ${fmt(Math.abs(a.balance)/12)}/month on average.` });
+  } else if (a.balance > 0) {
+    insights.push({ level: "positive", icon: "💰",
+      title: `You have a surplus of ${fmt(a.balance)}`,
+      body: `Great work! Consider putting this toward debt or savings.` });
+  }
+
+  const overBudget = yd().variableCategories.filter(c => {
+    const spent = monthly[curM].catTotals[c] || 0;
+    const budget = yd().budgets[c] || 0;
+    return budget > 0 && spent > budget;
+  });
+  if (overBudget.length > 0) {
+    insights.push({ level: "warning", icon: "🎯",
+      title: `Over budget in ${overBudget.length} ${overBudget.length === 1 ? "category" : "categories"}`,
+      body: `This month: ${overBudget.join(", ")}. Adjust spending or raise the limit.` });
+  }
+
+  const sortedCats = Object.entries(a.catTotals).sort((x,y) => y[1] - x[1]);
+  if (sortedCats.length > 0 && sortedCats[0][1] > 0) {
+    const [topCat, topVal] = sortedCats[0];
+    const pct = a.totVar > 0 ? (topVal / a.totVar * 100) : 0;
+    insights.push({ level: pct > 40 ? "warning" : "positive", icon: "🏆",
+      title: `${topCat} is your biggest spending category`,
+      body: `${fmt(topVal)} this year · ${pct.toFixed(0)}% of variable. ${pct > 40 ? "Dominating your budget." : "Reasonable share."}` });
+  }
+
+  if (a.totalDebt > 0) {
+    if (a.totDebtPaid === 0) {
+      insights.push({ level: "critical", icon: "💳",
+        title: "No debt payments logged yet",
+        body: `You have ${fmt(a.totalDebt)} in debt. Start with even small consistent payments.` });
+    } else {
+      const avgMonthlyPay = a.totDebtPaid / Math.max(1, curM + 1);
+      const monthsLeft = avgMonthlyPay > 0 ? a.debtRemaining / avgMonthlyPay : 0;
+      insights.push({ level: "positive", icon: "💪",
+        title: `${fmt(a.totDebtPaid)} paid this year`,
+        body: `At current rate (${fmt(avgMonthlyPay)}/month avg), debt-free in ~${monthsLeft.toFixed(0)} more months.` });
+    }
+  }
+
+  if (a.totInc > 0) {
+    const savingsRate = a.totSaved / a.totInc * 100;
+    insights.push({
+      level: savingsRate >= 15 ? "positive" : savingsRate >= 5 ? "warning" : "critical",
+      icon: "💸",
+      title: `Savings rate: ${savingsRate.toFixed(1)}%`,
+      body: savingsRate >= 15 ? "Excellent — on track for financial health." :
+            savingsRate >= 5 ? "Decent. Target 15-20% for long-term stability." :
+            "Very low. Prioritize building this up — even 5% is a start."
+    });
+  }
+
+  const avgMonthlyExp = a.totExp / 12;
+  const emergencyGoal = DATA.goals.find(g => /emergency/i.test(g.name));
+  if (emergencyGoal && avgMonthlyExp > 0) {
+    const monthsCovered = emergencyGoal.saved / avgMonthlyExp;
+    insights.push({
+      level: monthsCovered >= 3 ? "positive" : monthsCovered >= 1 ? "warning" : "critical",
+      icon: "🛡️",
+      title: `Emergency fund covers ${monthsCovered.toFixed(1)} months`,
+      body: monthsCovered >= 3 ? "You're well-protected." : `Target 3-6 months = ${fmt(avgMonthlyExp * 3)}-${fmt(avgMonthlyExp * 6)}`
+    });
+  }
+
+  // Payment-method insights
+  const ccSpendThisMonth = monthTxs(curM)
+    .filter(t => (t.type === "expense" || t.type === "fixed") && t.paidWith?.kind === "debt")
+    .reduce((s,t) => s + (Number(t.amount)||0), 0);
+  const totalSpendThisMonth = monthly[curM].expenses;
+  if (ccSpendThisMonth > 0 && totalSpendThisMonth > 0) {
+    const pct = ccSpendThisMonth / totalSpendThisMonth * 100;
+    insights.push({
+      level: pct > 50 ? "warning" : "positive",
+      icon: "💳",
+      title: `${pct.toFixed(0)}% of this month's spending is on credit cards`,
+      body: pct > 50 ? "Relying heavily on credit — interest compounds fast. Aim to pay this down each month." : `${fmt(ccSpendThisMonth)} of ${fmt(totalSpendThisMonth)} went to cards this month.`
+    });
+  }
+
+  const advisorTips = [];
+  const restCat = Object.keys(a.catTotals).find(c => /restaurant/i.test(c));
+  if (restCat && a.catTotals[restCat] > a.totVar * 0.15) {
+    advisorTips.push({ icon: "🍽️", title: `Restaurant spending is high`,
+      body: `${fmt(a.catTotals[restCat])} this year. Reducing 30% saves ${fmt(a.catTotals[restCat] * 0.3)}.` });
+  }
+  const transCat = Object.keys(a.catTotals).find(c => /transport/i.test(c));
+  if (transCat && a.catTotals[transCat] > 1000) {
+    advisorTips.push({ icon: "🚗", title: `Transportation costs are significant`,
+      body: `${fmt(a.catTotals[transCat])} this year. Monthly transit passes or carpooling may help.` });
+  }
+  const incomes = monthly.map(m => m.income).filter(v => v > 0);
+  if (incomes.length >= 3) {
+    const avgInc = incomes.reduce((s,v) => s+v, 0) / incomes.length;
+    const variance = incomes.reduce((s,v) => s + Math.pow(v - avgInc, 2), 0) / incomes.length;
+    const cv = Math.sqrt(variance) / avgInc;
+    if (cv > 0.4) {
+      advisorTips.push({ icon: "📊", title: "Your income is highly variable",
+        body: "Build a larger emergency fund to smooth out low-income months. Target: 6 months of expenses." });
+    }
+  }
+
+  return `
+  <div class="card">
+    <div class="card-title"><div class="card-title-left">🧠 Smart Insights</div></div>
+    <p class="note">Auto-generated from your data — updates as you log expenses.</p>
+    ${insights.length === 0 ? '<div class="empty"><div class="empty-icon">📊</div>Add more data to see insights</div>' : insights.map(ins => `
+      <div class="insight ${ins.level}">
+        <div class="insight-title">${ins.icon} ${escapeHTML(ins.title)}</div>
+        <div class="insight-body">${escapeHTML(ins.body)}</div>
+      </div>`).join("")}
+  </div>
+
+  ${advisorTips.length > 0 ? `<div class="card">
+    <div class="card-title"><div class="card-title-left">💡 Advisor Tips</div></div>
+    ${advisorTips.map(t => `
+      <div class="insight">
+        <div class="insight-title">${t.icon} ${escapeHTML(t.title)}</div>
+        <div class="insight-body">${escapeHTML(t.body)}</div>
+      </div>`).join("")}
+  </div>` : ""}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUICK-ADD MODAL
+// ═══════════════════════════════════════════════════════════════
+let quickAddState = {};
+
+function openQuickAdd() {
+  const today = new Date();
+  const isCurrentYear = today.getFullYear() === currentYear;
+  const m = isCurrentYear ? today.getMonth() : 0;
+  const d = isCurrentYear ? today.getDate() - 1 : 0;
+  const cats = yd().variableCategories;
+  quickAddState = {
+    amount: "",
+    category: cats[0] || null,
+    m, d,
+    paidWith: DATA.lastUsedPaidWith || defaultPaidWith(),
+    note: ""
+  };
+
+  document.getElementById("modal-content").innerHTML = `
+    <div class="modal-title">
+      <span>⚡ Quick Add</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <p class="note">Log a variable expense · ${MONTHS[m]} ${d + 1}, ${currentYear}</p>
+
+    <div style="margin:12px 0">
+      <label class="debt-field-label">Amount</label>
+      <input type="number" inputmode="decimal" step="0.01" class="amt-input" id="qa-amount"
+        style="width:100%;text-align:left;font-size:22px;padding:14px"
+        placeholder="0.00" autofocus
+        oninput="quickAddState.amount=this.value"/>
+    </div>
+
+    <div style="margin:14px 0">
+      <label class="debt-field-label">Category</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px" id="qa-cats">
+        ${cats.map(c => `
+          <button class="btn" data-cat="${escapeHTML(c)}" style="background:${colorFor(c)}22;color:${colorFor(c)};border:1.5px solid ${colorFor(c)}44;justify-content:center;padding:10px"
+            onclick="selectQuickCat('${escapeHTML(c)}')">${escapeHTML(c)}</button>`).join("")}
+      </div>
+    </div>
+
+    <div style="margin:14px 0">
+      <label class="debt-field-label">Paid with</label>
+      ${paidWithChipsHTML(quickAddState.paidWith)}
+    </div>
+
+    <div style="margin:14px 0">
+      <label class="debt-field-label">Date</label>
+      <input type="date" class="text-input" id="qa-date"
+        value="${currentYear}-${String(m+1).padStart(2,'0')}-${String(d+1).padStart(2,'0')}"
+        onchange="quickAddState.dateStr=this.value"/>
+    </div>
+
+    <div style="margin:14px 0">
+      <label class="debt-field-label">Note (optional)</label>
+      <input type="text" class="text-input" placeholder="e.g. Loblaws"
+        oninput="quickAddState.note=this.value"/>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveQuickAdd()">Save</button>
+    </div>
+  `;
+  document.getElementById("modal-overlay").classList.add("show");
+  setTimeout(() => document.getElementById("qa-amount")?.focus(), 100);
+  selectQuickCat(quickAddState.category, true);
+}
+
+function selectQuickCat(cat, keepState) {
+  if (!keepState) quickAddState.category = cat;
+  document.querySelectorAll("#qa-cats [data-cat]").forEach(btn => {
+    const c = btn.getAttribute("data-cat");
+    const isSel = c === cat;
+    btn.style.background = isSel ? colorFor(c) : colorFor(c) + "22";
+    btn.style.color = isSel ? "#fff" : colorFor(c);
+    btn.style.fontWeight = isSel ? "700" : "600";
+  });
+}
+
+function selectQuickPaidWith(kind, id) {
+  quickAddState.paidWith = { kind, id };
+  document.querySelectorAll(".pw-chip[data-pw]").forEach(el => {
+    el.classList.toggle("active", el.getAttribute("data-pw") === `${kind}:${id}`);
+  });
+}
+
+function saveQuickAdd() {
+  const amt = parseFloat(quickAddState.amount);
+  if (!amt || amt <= 0) { toast("Enter an amount", true); return; }
+  if (!quickAddState.category) { toast("Pick a category", true); return; }
+  if (!quickAddState.paidWith) { toast("Pick a payment method", true); return; }
+
+  const dateStr = document.getElementById("qa-date").value;
+  const [y, mm, dd] = dateStr.split("-").map(Number);
+  if (y !== currentYear) {
+    if (!DATA.years[y]) DATA.years[y] = defaultYearData(y);
+    currentYear = y;
+    DATA.currentYear = y;
+  }
+  const m = mm - 1;
+  const d = dd - 1;
+
+  addTransaction({
+    type: "expense",
+    date: toISO(y, m, d),
+    amount: amt,
+    category: quickAddState.category,
+    paidWith: quickAddState.paidWith,
+    note: (quickAddState.note || "").trim()
+  }, m);
+  closeModal();
+  render();
+  toast(`Added ${fmt(amt)} to ${quickAddState.category}`);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS MODAL
+// ═══════════════════════════════════════════════════════════════
+function openSettings() {
+  const hasV3Snap = !!localStorage.getItem(LEGACY_KEY);
+  const canShare = !!(navigator.canShare && typeof File !== "undefined");
+  const lastSyncLabel = DATA.lastSyncAt
+    ? `Last sync: ${new Date(DATA.lastSyncAt).toLocaleString()} ${DATA.lastSyncDirection === "up" ? "→ iCloud" : "← iCloud"}`
+    : "Never synced on this device";
+
+  document.getElementById("modal-content").innerHTML = `
+    <div class="modal-title">
+      <span>⚙️ Settings & Data</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div style="margin:16px 0;padding:14px;border-radius:12px;background:var(--accent-soft);border:1px solid rgba(108,92,231,0.3)">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#fff">☁️ iCloud Sync</div>
+      <p class="note" style="margin-bottom:10px;color:#c9b8f5">
+        Keep your phone and laptop in sync by saving one shared file to iCloud Drive.
+        Tap <b>Sync to iCloud</b>, pick <b>Save to Files → iCloud Drive</b>, and always overwrite the same file.
+        On your other device, tap <b>Pull from iCloud</b> and pick that file.
+      </p>
+      <div class="flex gap-2" style="flex-direction:column">
+        <button class="btn btn-primary" style="justify-content:center" onclick="syncToICloud()">
+          ⬆️ Sync to iCloud ${canShare ? "(via Share sheet)" : "(download)"}
+        </button>
+        <label class="btn btn-ghost" style="justify-content:center;cursor:pointer">
+          ⬇️ Pull from iCloud
+          <input type="file" accept=".json,application/json" style="display:none" onchange="if(this.files[0])syncFromICloudPick(this.files[0])"/>
+        </label>
+      </div>
+      <div id="sync-status" class="note" style="margin-top:10px;color:#9d8ee0">${escapeHTML(lastSyncLabel)}</div>
+      <p class="note" style="margin-top:8px;font-size:10px">
+        💡 First-time tip: on iPhone, after tapping <b>Save to Files</b>, long-press the filename and rename it to <code>finance-tracker-sync.json</code>. Always overwrite this same file from both devices.
+      </p>
+    </div>
+
+    <div style="margin:16px 0">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px">📦 Manual Backup</div>
+      <p class="note">Download a dated snapshot (keep alongside your iCloud sync file for safety).</p>
+      <div class="flex gap-2" style="margin-top:10px">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="exportData()">⬇️ Export Dated Backup</button>
+        <label class="btn btn-ghost" style="flex:1;justify-content:center;cursor:pointer">
+          ⬆️ Import Any Backup
+          <input type="file" accept=".json" style="display:none" onchange="if(this.files[0])importData(this.files[0])"/>
+        </label>
+      </div>
+      ${DATA.lastBackup ? `<div class="note" style="margin-top:8px">Last backup: ${new Date(DATA.lastBackup).toLocaleDateString()}</div>` : ""}
+      ${hasV3Snap ? `<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="restoreV3Snapshot()">↺ Restore v3 snapshot</button>` : ""}
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="margin:16px 0">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px">💱 Currency Symbol</div>
+      <input type="text" class="text-input" value="${escapeHTML(DATA.currency || "$")}" maxlength="3"
+        onblur="DATA.currency=this.value.trim()||'$';save();render();" style="max-width:100px"/>
+      <p class="note" style="margin-top:6px">Display only — no FX conversion.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="margin:16px 0">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px">📅 Year</div>
+      ${renderYearSelector()}
+      <p class="note" style="margin-top:8px">Each year keeps its own transactions.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="margin:16px 0">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--red)">⚠️ Danger Zone</div>
+      <button class="btn btn-danger" style="width:100%;justify-content:center;margin-bottom:8px" onclick="resetYear()">🗑 Reset ${currentYear} only</button>
+      <button class="btn btn-danger" style="width:100%;justify-content:center" onclick="resetAll()">🔥 Delete ALL data</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="closeModal()">Done</button>
+    </div>
+  `;
+  document.getElementById("modal-overlay").classList.add("show");
+}
+
+async function resetYear() {
+  if (!(await appConfirm(`Delete all transactions for ${currentYear}? This cannot be undone — export a backup first.`))) return;
+  DATA.years[currentYear] = defaultYearData(currentYear);
+  save(); closeModal(); render();
+  toast(`${currentYear} reset`);
+}
+
+async function resetAll() {
+  if (!(await appConfirm("Delete ALL data across every year, all debts, all goals, all accounts? Export a backup first!"))) return;
+  if (!(await appConfirm("Really? This is irreversible."))) return;
+  localStorage.removeItem(STORAGE_KEY);
+  DATA = defaultData();
+  currentYear = CURRENT_YEAR;
+  save(); closeModal(); render();
+  toast("All data deleted");
+}
+
+function closeModal() {
+  document.getElementById("modal-overlay").classList.remove("show");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAIN RENDER
+// ═══════════════════════════════════════════════════════════════
+function render() {
+  const el = document.getElementById("view-content");
+  const views = {
+    dash: renderDash, daily: renderDaily, budget: renderBudget,
+    income: renderIncome, debt: renderDebt, wealth: renderWealth, insights: renderInsights
+  };
+  el.innerHTML = (views[currentView] || renderDash)();
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === currentView));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SERVICE WORKER
+// ═══════════════════════════════════════════════════════════════
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(err => console.warn("SW registration failed", err));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+(async function init() {
+  await load();
+  setView("dash");
+})();
+</script>
+</body>
+</html>
