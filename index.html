@@ -926,6 +926,30 @@ function _csSelect(id, callbackName, rawVal, parseFlag) {
     : rawVal;
   const fn = window[callbackName];
   if (typeof fn === "function") fn(payload);
+
+  // Update the visible button label, icon, and selected-option styling
+  if (el) {
+    // Find the clicked option by data-val
+    const opts = el.querySelectorAll(".cs-opt");
+    let clickedOpt = null;
+    opts.forEach(o => {
+      const isSel = o.dataset.val === String(rawVal);
+      o.classList.toggle("cs-sel", isSel);
+      if (isSel) clickedOpt = o;
+    });
+    // Mirror the clicked option's icon & label into the trigger button
+    if (clickedOpt) {
+      const btnIcon = el.querySelector(".cs-btn-icon");
+      const btnLabel = el.querySelector(".cs-btn-label");
+      const optIcon = clickedOpt.querySelector(".cs-opt-icon");
+      if (btnIcon && optIcon) btnIcon.innerHTML = optIcon.innerHTML;
+      if (btnLabel) {
+        const optLabel = clickedOpt.querySelector(".cs-opt-label");
+        btnLabel.textContent = optLabel ? optLabel.textContent : String(rawVal);
+        btnLabel.classList.remove("placeholder");
+      }
+    }
+  }
 }
 
 // Close any open custom select when the user clicks / taps outside it or presses Escape.
